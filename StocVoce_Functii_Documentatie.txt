@@ -1,0 +1,736 @@
+
+--- PAGE 1 ---
+
+StocVoce
+ Documenta■ie Complet■ — 573 Func■ii
+ Gestiune Depozit cu Comenzi Vocale & AI
+573
+Func■ii Total
+26.000+
+Linii de cod
+610
+Func■ii originale
+4
+Industrii suportate
+Claude API
+AI integrat
+Firebase
+Backend timp real
+■ 1. Autentificare & Utilizatori — 18 func■ii
+Sistem complet de autentificare Firebase cu 2 pa■i: selector industrie (Depozit/Restaurant/Retail/Construc■ii) urmat de
+login email+parol■. Fiecare cont nou intr■ în starea 'pending' ■i trebuie aprobat de admin.
+Func■ie
+Descriere
+_doLoginReal()
+Login Firebase Auth — verific■ status: pending/approved/rejected. Dac■ pending → mesaj 'Cont în a■teptare'. Dac■ respins → motiv afi■at.
+_doRegisterReal()
+Înregistrare cont nou cu nume, depozit, email, parol■. Contul intr■ automat în 'pending' ■i adminul prime■te alert■ Telegram.
+doLogout()
+Deconectare Firebase + cur■■are localStorage + redirect la ecranul de login.
+approveUser(uid)
+Admin aprob■ operator → schimb■ status în Firebase la 'approved'. Operatorul poate intra imediat.
+rejectUser(uid)
+Admin respinge cont cu motiv op■ional. Utilizatorul vede mesajul la next login.
+revokeUser(uid)
+Revocare acces f■r■ ■tergere cont — poate fi reaprobat ulterior.
+checkLoginLockout()
+Blocheaz■ loginul dup■ 5 încerc■ri gre■ite în 5 minute. Alert■ Telegram la 3+ încerc■ri.
+logFailedLogin(attempt)
+Înregistreaz■ fiecare încercare gre■it■ cu timestamp, UA, PIN mascat.
+logLoginDevice()
+Salveaz■ device-ul ■i browser-ul la fiecare login reu■it (audit trail).
+logUserSession(action)
+Log sesiune: login/logout/timeout cu user, depot, timestamp, limb■.
+verifyPIN(pin) / verifyPin()
+Verific■ PIN 4 cifre operator. Gre■it → logFailedLogin() → alert■ Telegram.
+setOperatorPIN(name,pin)
+Seteaz■ PIN personal pentru operator la kiosk (f■r■ tastatur■).
+checkPermission(action) / canDo()
+Verific■ dac■ rolul curent poate face ac■iunea: Admin>Operator>Viewer>Contabil.
+getUserPermissions()
+Returneaz■ lista complet■ de permisiuni pentru rolul curent.
+openSecretDashboard()
+Dashboard admin secret cu to■i utilizatorii, log sesiuni, statistici globale.
+loadAllUsers() / filterUsers()
+Încarc■ ■i filtreaz■ to■i utilizatorii din Firebase (doar admin).
+searchUsers(query)
+Caut■ utilizatori dup■ nume/email/depot în panoul admin.
+resetLoginAttempts()
+Reseteaz■ contorul de încerc■ri gre■ite dup■ login reu■it.
+
+
+--- PAGE 2 ---
+
+■ 2. Voce & Procesare Comenzi — 45 func■ii
+Motorul vocal este punctul central al aplica■iei. Folose■te Web Speech API cu maxAlternatives=5 (alege varianta cu
+cele mai multe cuvinte-cheie). Normalizeaz■ toate diacriticele române■ti (■/■/■/â/î) ■i proceseaz■ comenzile în timp
+real f■r■ delay.
+Func■ie
+Descriere
+processCommand(text)
+PUNCTUL CENTRAL — prime■te textul vocal ■i distribuie secven■ial la toate handler-ele. Dac■ un handler returneaz■ true, se opre■te.
+handleCommand(text)
+Al doilea nivel — identific■ tipul: IN/OUT/QUERY/TRANSFER/NOTE ■i extrage componentele.
+executeOperation(type,p,qty,text,client)
+Execut■ opera■ia: modific■ stocul, logheaz■, alerteaz■ Telegram dac■ sub minim, red■ confirmare vocal■.
+findProduct(words[])
+Caut■ produsul în stoc prin normalizare + matching par■ial. '■uruburi m6' g■se■te '■uruburi M6 Zincate'.
+normalizeText(text)
+Elimin■ diacritice: ■→s, ■→t, ■→a, â→a, î→i. Baza tuturor compara■iilor.
+parseQuantity(text)
+Extrage num■rul: 'zece' →10, 'o sut■ dou■zeci' →120, '2k' →2000.
+extractClientName(text)
+'pentru Ion Popescu' → 'Ion Popescu'. Folosit la livr■ri vocale.
+getVoiceCommands()
+Dic■ionar IN: ['adaug■','pune','bag■',...] OUT: ['scoate','scade','ia',...] în român■.
+handleMultiProductCommand()
+'adaug■ 10 ■uruburi ■i 5 cuie' — proceseaz■ multiple produse dintr-o fraz■.
+handleChainCommand()
+'10 M6 20 M8 30 M10' — cantit■■i înl■n■uite f■r■ conjunc■ie.
+handleOrdinalCommand()
+'primul produs adaug■ 5' — referire prin num■r ordinal în lista sortat■.
+handleApproxQty()
+'vreo zece' / 'cam dou■zeci' / 'câteva' — cantit■■i aproximative.
+handlePercentCommand()
+'scade 20%' — calculeaz■ ■i scade procentul din stocul curent.
+handleMoneyQuery()
+'câ■i bani am în stoc?' → r■spuns vocal cu valoarea la cost ■i vânzare.
+handleCriticalQuery()
+'ce produse sunt critice?' → lista top 3 epuizate + top 3 sub minim.
+handleWhatSoldToday()
+'ce am vândut azi?' → ie■irile din ziua curent■ cu operatori.
+handleVoiceCountProducts()
+'câte produse am?' → total + epuizate + sub minim.
+handleVoiceUndo()
+'nu, anuleaz■' → apeleaz■ undoLastOperation() instant.
+handleVoiceNote()
+'noteaz■: lot primit stricat' → not■ pe ultimul produs operat.
+handleVoiceNoteOnProduct()
+'noteaz■ la ■uruburi: lot expirat' → not■ pe produs specific.
+handleVoiceTelegramReport()
+'trimite raport' → exportTelegramWithDetails() cu screenshot.
+handleVoiceDepotTransfer()
+'trimite 10 ■uruburi la depozit Cluj' → transfer Firebase inter-depozit.
+handleVoiceHistoryToday()
+'ce am f■cut azi?' → historicul complet al zilei.
+handleVoiceChart()
+'arat■ graficul' / 'grafic s■pt■mân■' → deschide graficul potrivit.
+handleVoiceShortcut()
+Comenzi ultra-scurte: 'status', 'bani', 'critic', 'audit', 'backup'.
+handleFullStatusCommand()
+'cum st■ depozitul?' → AI genereaz■ raport complet vocal.
+processVoiceOffline()
+Procesare local■ când nu e internet — salveaz■ în localStorage, sincronizeaz■ la reconectare.
+
+
+--- PAGE 3 ---
+
+Func■ie
+Descriere
+processCommandWithEcho()
+Mod confirmare: repet■ comanda ■i a■teapt■ 'da/nu' înainte de execu■ie.
+speak(text)
+Text-to-Speech în român■ cu vocea setat■. Coada de mesaje — nu se suprapun.
+toggleMainMic()
+Pornire/oprire microfon principal. Actualizeaz■ UI ■i starea global■.
+buildRecognition()
+Configureaz■ Web Speech API: lang='ro-RO', maxAlternatives=5, continuous=true.
+detectVoiceError()
+La erori microfon: network/aborted → restart automat dup■ 1s.
+normalizeDialect()
+Corecteaz■ variante regionale: '■urub'→'■urub', 'tinta'→'■int■'.
+voiceToolCommand()
+'iau borma■ina' → checkOutTool(). 'aduc burghiul' → checkInTool().
+voiceFullStatus()
+Raport complet vocal: produse/critice/valoare/opera■ii azi.
+startDailyVoiceSummary()
+Declan■at automat la 18:00 — rezumat AI al zilei citit cu vocea.
+■ 3. Stoc — Opera■ii Core — 35 func■ii
+Gestionarea complet■ a stocului cu Firebase Realtime Database. Fiecare produs are: id, name, qty, unit, cat, min,
+maxQty, supplier, price_buy, price_sell, loc, expiry, barcode, notes, tags, variants, photos, serial_numbers, lot_numbers.
+Func■ie
+Descriere
+loadStockFromFirebase()
+Încarc■ stocul din Firebase la login. Listener real-time: orice schimbare se reflect■ instant pe toate device-urile.
+saveStockToFirebase()
+Salveaz■ în Firebase + localStorage backup. Merge corect offline (queue).
+renderStock()
+Afi■eaz■ cardurile cu filtre active, sortare ■i c■utare. Re-renderizeaz■ doar dac■ s-au schimbat datele.
+updateStats()
+Actualizeaz■ contoarele din footer: PRODUSE / CRITIC (sub minim) / AZI (opera■ii azi).
+addProduct()
+Adaug■ produs nou. AI auto-completeaz■ categoria, UM ■i stocul minim recomandat.
+saveEditProduct() / saveEdit()
+Salveaz■ modific■rile. Logheaz■ fiecare câmp schimbat în productChangelog.
+deleteProduct()
+■tergere cu confirmare PIN dac■ operatorul nu e admin.
+duplicateProduct()
+Cloneaz■ produsul cu toate câmpurile, adaug■ '(copie)' la nume.
+toggleArchive(id)
+Arhivare/dezarhivare produs. Produsele arhivate nu apar în stoc activ dar pot fi dezarhivate.
+toggleArchivedView()
+Comutare între vizualizarea stocului activ ■i cel arhivat.
+calculateStockValue()
+Returneaz■ {totalBuy, totalSell, profit, items}. Folosit în dashboard ■i rapoarte.
+calcDepotHealth()
+Scor 0-100%: penalizare pentru epuizate (-5/produs), sub minim (-2), f■r■ furnizor (-1).
+predictStockDepletion(p)
+Pe baza mi■c■rilor din ultimele 30 zile: {days: N, dailyAvg: X}. '5 zile pân■ la epuizare'.
+calcAutoMinStock()
+Calculeaz■ stocul minim recomandat: media zilnic■ × lead time furnizor × factor siguran■■.
+calcAutoMarkup()
+Calculeaz■ adaosul optim pe baza categoriei, pre■ului de achizi■ie ■i mediei categoriei.
+calcWeightedAvgCost(p,qty,price)
+Cost mediu ponderat la fiecare recep■ie: (stocOld×costOld + qtyNew×costNew) / total.
+calcStockRotation()
+Rulaj stoc: valoare vândut■ / valoare medie stoc × 365 = rota■ii/an.
+
+
+--- PAGE 4 ---
+
+Func■ie
+Descriere
+calcProductMargin(p)
+Marj■ brut■ per produs: (pre■_vânzare - pre■_cost) / pre■_vânzare × 100.
+getAvailableStock(id)
+Stoc disponibil = qty - rezerv■ri active. Folosit la livr■ri pentru a nu supravinde.
+checkDuplicate(name)
+La ad■ugare, detecteaz■ produse similare cu levenshtein distance < 3.
+autoArchiveInactive()
+Arhiveaz■ automat produse cu qty=0 ■i f■r■ mi■care >90 zile (rulat noaptea).
+checkNegativeStock(p,qty)
+Blocheaz■ sc■derea sub 0. Sugereaz■ alternative din aceea■i categorie.
+sortStock(field)
+Sortare: nume/categorie/cantitate/valoare/expirare/ultima mi■care.
+filterByLocation(loc)
+Filtrare dup■ loca■ie/raft. Combin■ cu alte filtre (categorie, tag).
+filterByTag(tag)
+Filtrare dup■ tag personalizat. Multiple taguri → OR logic.
+filterFavorites()
+Afi■eaz■ doar produsele marcate ca favorite de operatorul curent.
+openCardZoom(id) / openProductZoom()
+Modal zoom card cu toate detaliile: note, istoric, seriale, loturi, variante, poze.
+openAddModal() / closeAddModal()
+Modal ad■ugare produs. La deschidere: AI auto-completeaz■ câmpurile dac■ numele are >3 caractere.
+openEditModal(id) / closeEditModal()
+Modal editare produs cu toate câmpurile ■i istoricul modific■rilor.
+checkStockConcentration()
+Alert■ dac■ top 5 produse reprezint■ >80% din valoarea stocului (risc concentrare).
+checkSeasonalProducts()
+Verific■ lunar dac■ produsele sezoniere au minimele ajustate corect.
+checkInventarDiff()
+Compar■ stocul fizic cu sistemul ■i genereaz■ raport diferen■e.
+getStockValueHistory()
+Istoricul valorii stocului în timp (salvat zilnic în Firebase).
+runFullAnalysis()
+Analiz■ complet■ AI: ABC + ROI + sezonalitate + predic■ii + recomand■ri.
+■ 4. Clien■i & CRM — 40 func■ii
+Sistem CRM complet integrat cu programul de fidelitate pe 4 nivele (Bronze/Silver/Gold/Platinum), pre■uri diferen■iate
+per grup, scaden■ar pl■■i cu alert■ restan■e ■i export Excel.
+Func■ie
+Descriere
+renderClients() / openClientsModal()
+Lista complet■ clien■i cu istoricul comenzilor, valoarea total■ ■i segmentul (VIP/Regular/Ocazional).
+addClient()
+Adaug■ client cu: nume, contact, telefon, email, adres■, grup, note, ziua na■terii.
+openClientProfile(name)
+Profil complet: statistici, istoricul comenzilor, produse preferate, not■ CRM, discount aplicat.
+segmentClients()
+Segmentare automat■: VIP (>20 vizite), Regular (10-20), Ocazional (3-10), Inactiv (<3).
+getLoyaltyLevel(name)
+Nivel fidelitate: Bronze(0 RON), Silver(500+), Gold(2000+), Platinum(5000+).
+showLoyaltyCard(name)
+Afi■eaz■ cardul de fidelitate: nivel, puncte, valoare total■, discount, pân■ la nivel urm■tor.
+setClientGroup(name,group)
+Grupuri cu discount automat: B2C(0%), B2B(10%), Angrosist(20%), VIP(15%).
+getGroupPrice(p,name)
+Calculeaz■ pre■ul final dup■ discount de grup aplicat la price_sell.
+setClientDiscount(name,pct)
+Discount individual pe client, prioritar fa■■ de discount de grup.
+
+
+--- PAGE 5 ---
+
+Func■ie
+Descriere
+getClientPrice(p,name)
+Returneaz■ pre■ul final: individual → grup → standard, cu cel mai mare discount.
+setCRMData(name,data)
+Salveaz■ datele CRM în Firebase: contact, stadiu (prospect/activ/inactiv/pierdut), note.
+openCRMModal(name)
+Deschide modalul CRM cu toate câmpurile precompletate pentru clientul respectiv.
+addPaymentSchedule(name,amount,date)
+Adaug■ scaden■■ plat■. Salvat în Firebase cu status paid/pending.
+markPaymentPaid(id)
+Marcheaz■ plata ca încasat■ cu timestamp. Actualizeaz■ ■i Firebase.
+getOverduePayments()
+Lista pl■■ilor restante (dueDate < azi). Folosit în alert■ ■i badge browser.
+renderPaymentSchedule()
+Afi■eaz■ scaden■arul cu coduri culoare: ro■u=restant, portocaliu=azi, verde=viitor.
+checkVIPInactivity()
+Dac■ un VIP nu a cump■rat în >30 zile → triggerAlert() + op■ional Telegram.
+setClientBirthday(name,MMDD)
+Salveaz■ ziua na■terii. checkBirthdaysToday() ruleaz■ zilnic ■i trimite Telegram.
+generatePersonalizedOffer(name,items)
+PDF ofert■ cu discount aplicat automat pe fiecare linie + total final.
+saveClientCart(name,items)
+Salveaz■ co■ul curent pe client pentru a putea fi restaurat ulterior.
+loadClientCart(name)
+Restaureaz■ co■ul salvat al clientului. Actualizeaz■ badge co■.
+getClientProductStats(name)
+Ce a cump■rat clientul: produs, cantitate total■, num■r comenzi — sortat descresc■tor.
+addRecurringClientOrder(name,items,days)
+Comand■ recurent■: la fiecare N zile scade automat din stoc ■i logheaz■.
+generateWhatsAppOrder(name,items)
+Template WhatsApp pre-completat cu lista produselor ■i pre■urile. Deschide wa.me.
+generateSMSTemplate(name,items,date)
+SMS max 160 caractere cu comanda ■i data livr■rii. Copieaz■ în clipboard.
+exportCRMExcel()
+Excel cu to■i clien■ii: date CRM, grup, nivel fidelitate, note, ultima actualizare.
+setClientAddress(name,addr,city,county)
+Salveaz■ adresa de livrare per client. Folosit■ în bon ■i packing list.
+setClientNote(name,note)
+Not■ intern■ pe client (ex: 'pl■te■te mereu cu întârziere de 30 zile').
+setMonthlyLimit(name,qty)
+Limiteaz■ cantitatea maxim■ pe care un client o poate comanda lunar.
+checkMonthlyLimit(name,qty)
+Verific■ înainte de livrare dac■ clientul a dep■■it limita lunar■.
+getFavoriteClients()
+Lista clien■ilor marca■i ca favori■i de operatorul curent.
+checkBirthdaysToday()
+Verific■ zilnic dac■ vreun client are ziua azi → alert■ + Telegram op■ional.
+getClientsByCity()
+Statistici clien■i per ora■ — pentru analiz■ teritoriu de vânz■ri.
+exportClientHistoryPDF(name)
+PDF cu istoricul complet de comenzi al unui client.
+exportClientFullPDF(name)
+PDF complet client: date CRM + statistici + istoricul comenzilor + produse favorite.
+getRecurringClients()
+Identific■ clien■ii cu pattern de cump■rare regulat (s■pt■mânal/lunar).
+checkClientLimit(name,qty)
+Verific■ limita zilnic■ setat■ de admin per client.
+setClientLimit(name,qty)
+Seteaz■ limita zilnic■ de comand■ per client.
+filterDashClients() / renderDashClients()
+Filtrare ■i afi■are clien■i în dashboard admin cu statistici agregate.
+
+
+--- PAGE 6 ---
+
+■ 5. Rapoarte & Grafice — 35 func■ii
+Func■ie
+Descriere
+generatePDF()
+PDF complet stoc cu header branded, tabel cu autoTable (jsPDF), valorile la cost ■i vânzare, QR depot.
+exportFullExcel()
+Excel cu 3 sheet-uri: Stoc complet + Mi■c■ri luna curent■ + Clien■i cu statistici.
+exportLog()
+Export■ istoricul opera■iilor în CSV: timp, comand■, rezultat, tip, operator, client.
+screenshotDashboard()
+Screenshot HTML→Canvas→PNG trimis pe Telegram. Vizualizare dashboard f■r■ acces la app.
+exportTelegramWithDetails()
+Raport detaliat zilnic Telegram: total produse, critice, valoare stoc, intr■ri/ie■iri azi.
+showABCAnalysis()
+Analiza ABC: A=primele produse ce reprezint■ 80% din valoare, B=15%, C=5%. Vizual cu culori.
+showROIReport()
+ROI per produs: (pre■_vânzare - pre■_cost) / pre■_cost × 100. Sortat descresc■tor.
+showCashflowChart()
+Grafic cashflow 12 luni: bare cump■r■ri (ro■u) vs vânz■ri (verde) cu linia profit.
+showActivityHeatmap()
+Heatmap activitate: per zi a s■pt■mânii + per or■. Identific■ vârfurile de activitate.
+showOperatorEfficiency()
+Eficien■a per operator: ops/or■, erori%, intr■ri, ie■iri. Calculat pe întregul istoricul.
+showOperatorInactivity()
+Operatori care nu au lucrat deloc în ziua curent■ — alert■ pentru manager.
+showPredictiveChart()
+Grafic 30 zile real + 7 zile predic■ie liniar■ bazat■ pe trendul ultimelor 2 s■pt■mâni.
+showNoMovement90Days()
+Produse cu stoc >0 f■r■ nicio mi■care în ultimele 90 zile. Total RON blocat.
+showStagnantReport()
+Raport detaliat stoc stagnant cu recomand■ri: promovare, reducere pre■, returnare furnizor.
+showValuePerRack()
+Valoarea stocului per loca■ie/raft. Identific■ rafturile supraaglomerate sau goale.
+showSeasonalReport()
+Compara■ie an vs an pe luna curent■: opera■ii + tendin■■ procentual■.
+showMonthlyComparison()
+Luna curent■ vs luna trecut■: ops total, intr■ri, ie■iri, clien■i unici, varia■ie %.
+showTopClientsByValue()
+Top 10 clien■i dup■ valoarea total■ a comenzilor. Vizual cu medalii ■■■.
+showExpirationLosses()
+Produse expirate r■mase în stoc: cantitate, valoare pierdere total■ în RON.
+showMobileDashboard()
+Dashboard simplificat mobil: 4 carduri mari — Valoare/Produse/Critice/Opera■ii Azi.
+showCategoryPieChart()
+Grafic pie categorii dup■ valoare stoc. Top 8 categorii cu coduri culoare.
+showOperatorReport()
+Raport complet per operator: toate opera■iile, erori, clien■i servi■i, valoare procesat■.
+showSupplierReport()
+Performan■a furnizorilor: timp livrare mediu, num■r produse, valoare stoc, rating stele.
+showLocationReport()
+Raport per loca■ie: produse, cantitate total■, valoare, produse critice per raft.
+showPredictions()
+Predic■ii AI pentru toate produsele: zile pân■ la epuizare + cantitate de comandat.
+showPLReport() / showProfitReport()
+Profit & Loss: venituri - costuri = profit brut. Per categorie ■i per operator.
+renderRaportLunar()
+Raport lunar interactiv cu grafice: zilnic/s■pt■mânal/per categorie/per operator.
+exportReportWord()
+Export raport în format .doc (HTML cu styles Word) desc■rcabil direct.
+exportSAGAFormat()
+Export NIR (Nota de Intrare-Recep■ie) în format text compatibil SAGA/SmartBill.
+calcVATReport()
+Raport TVA: valoare baz■ + TVA 19% per categorie. Export pentru contabil.
+
+
+--- PAGE 7 ---
+
+Func■ie
+Descriere
+showPLReport()
+P&L simplu: total intr■ri la cost vs total ie■iri la pre■ vânzare = profit brut estimat.
+showStockValueDetails()
+Detalii valoare stoc: breakdown per categorie, per furnizor, per loca■ie.
+generateHeatmap()
+Heatmap vizual SVG activitate operatori per zi ■i or■ în ultima lun■.
+showHealthMeter()
+Indicator vizual s■n■tate depozit 0-100% cu sfaturi de îmbun■t■■ire.
+showNoMovementReport()
+Raport extins: produse f■r■ mi■care cu durata stagn■rii ■i valoarea blocat■.
+■ 6. AI — Integrare Claude API — 20+ func■ii
+Toate func■iile AI folosesc claude-sonnet-4-20250514 prin API-ul Anthropic. R■spunsurile sunt în român■ ■i structurate
+JSON unde e nevoie de date. Fiecare func■ie are fallback în caz de eroare API.
+Func■ie
+Descriere
+aiDailySummaryVocal()
+La 18:00: genereaz■ rezumat 3 propozi■ii prietenos ■i îl cite■te cu vocea. Ex: 'Ast■zi ai procesat 47 de opera■ii...'
+aiFullDepotAudit()
+Audit complet: Probleme Critice / Riscuri / Recomand■ri / Puncte Forte. Bazat pe 10+ metrici.
+aiForecastByCategory()
+Forecast 30 zile per categorie: cerere estimat■, cantitate de comandat, risc de epuizare.
+aiDetectSeasonality()
+Analizeaz■ mi■c■rile pe 12 luni per produs → identific■ sezonalitate ■i sugereaz■ ajust■ri minime.
+aiOptimalPrice(id)
+Pre■ul optim de vânzare bazat pe: cost achizi■ie + medie categorie + margin target.
+aiFindSupplier(name)
+3 furnizori tipici din România pentru produsul dat: tip, termen livrare estimat, note.
+aiGroupSimilarProducts()
+Detecteaz■ produse duplicate sau similare în stoc ■i sugereaz■ fuzionare.
+aiPredictChurnRisk()
+Clien■i cu risc de abandon (inactivi >20 zile, min 3 vizite) + ac■iuni de reten■ie.
+aiClassifyImportedProducts(prods)
+La import Excel: categorizeaz■ automat produsele în categoriile existente.
+aiDetectPriceAnomaly(p,price)
+Alert■ dac■ noul pre■ e cu >50% fa■■ de media categoriei. Previne erori de tastare.
+aiAnalyzeProductNotes()
+Analizeaz■ sentimentul notelor: identific■ probleme recurente ■i produse cu issues.
+aiOptimizeWarehouseSpace()
+Recomand■ri organizare: fast-movers lâng■ ie■ire, produse grele jos, FIFO per alee.
+aiGenerateProductDescription(id)
+Descriere marketing 2 propozi■ii per produs. Salvat■ în p.description.
+aiNameFromPhoto(file)
+Identific■ produsul dintr-o poz■ ■i completeaz■ automat numele, categoria, UM.
+aiDetectAnomalies()
+Detecteaz■ anomalii în mi■c■ri: cantit■■i neobi■nuit de mari, ore ciudate, operatori suspicio■i.
+aiOptimalSupplier(name)
+Cel mai bun furnizor pe baza: pre■, termen livrare, calitate istoric■.
+askStocVoceBot(question)
+Chatbot intern cu context depozit + istoricul conversa■iei (ultimele 20 mesaje).
+getAIPrediction(p)
+Predic■ie generic■ AI pentru un produs: trend, risk, cantitate recomandat■ comand■.
+aiDetectPriceAnomaly()
+Verific■ toate pre■urile la import ■i semnalizeaz■ abaterile mari de la medie.
+aiForecastByCategory()
+Forecast pe categorii: care vor cre■te, care vor sc■dea, ce s■ achizi■ionezi prioritar.
+aiSuggestRename(p)
+Sugereaz■ un nume mai clar/standardizat pentru produs bazat pe categoria ■i unitatea de m■sur■.
+
+
+--- PAGE 8 ---
+
+■■ 7. Construc■ii & ■antiere — 14 func■ii
+Func■ie
+Descriere
+createGanttChart(siteId)
+Grafic Gantt vizual cu bare colorate per etap■: % progres, responsabil, ro■u dac■ întârziat.
+addGanttTask(siteId,name,start,end,resp,phase)
+Adaug■ etap■ cu dat■ start/final, responsabil ■i faza (funda■ie/structur■/finisaje).
+updateGanttProgress(siteId,taskName,pct)
+Actualizeaz■ % din voce: 'funda■ie 60%'. Salvat în localStorage.
+ganttDelayAlert(siteId)
+Verific■ toate etapele: dac■ endDate < azi ■i progress < 100% → alert■ + Telegram.
+logMaterialByPhase(siteId,prodId,qty,phase,worker)
+Scade din stoc ■i înregistreaz■ consumul per faz■: cine, ce, cât, când.
+phaseConsumptionReport(siteId)
+Raport total RON consumat per faz■. Ultimele 5 intr■ri per faz■ vizibile.
+comparePlannedVsActual(siteId)
+Buget planificat vs consumat real: procent, diferen■■ RON, grafic progress bar.
+checkOutTool(name,worker,siteId)
+Scoate scul■: log cine, ora, ■antier. Alert■ Telegram. Blocheaz■ dac■ deja la altcineva.
+checkInTool(name,worker,condition)
+Returnare scul■: calculeaz■ ore folosite, înregistreaz■ starea (bun■/defect■). Alert■ dac■ defect■.
+toolInventory()
+Modal inventar scule: disponibil/la operator/defect■. Butoane IAU/ADUC cu câmp c■utare.
+toolOverdueAlert()
+Alert■ automat■ la fiecare or■ dac■ o scul■ e nereturat■ dup■ >8h.
+calcBeton(volM3,clasa)
+Calculator beton: volum → saci ciment + m³ nisip + m³ pietri■ + litri ap■. 5 clase.
+calcMortar(suprafataM2,grosimeMM)
+Calculator mortar: suprafa■■ + grosime → saci ciment (25kg) + m³ nisip.
+calcCaramida(suprafataM2,tipZid)
+Calculator zid■rie: m² → buc■■i c■r■mizi (+5% pierderi) + m³ mortar + saci ciment.
+■ 8. Alerte & Notific■ri — 20 func■ii
+Func■ie
+Descriere
+triggerAlert(msg,type)
+Afi■eaz■ banner alert■ (ok/warn/err). Coada de alerte — max 1 vizibil■ simultan.
+showNextAlert()
+Proceseaz■ urm■toarea alert■ din coad■ dup■ 300ms de la închiderea celei curente.
+closeAlert()
+Închide bannerul curent ■i declan■eaz■ showNextAlert().
+sendTelegramAlert(msg,chatId)
+Trimite mesaj pe Telegram Bot API. Folosit de 20+ func■ii pentru notific■ri critice.
+checkAndAlertTelegram(p)
+La fiecare modificare stoc: dac■ qty=0 → 'EPUIZAT', dac■ qty<=min → 'SC■ZUT'.
+sendBrowserNotification(title,body)
+Notificare browser nativ■ (dac■ permisiunea e acordat■). Fallback la triggerAlert.
+queueNotification(msg,type)
+Adaug■ notificare în coad■. Dac■ mai multe în <3s → le grupeaz■ într-un singur mesaj.
+flushNotifications()
+Trimite notific■rile grupate: dac■ 1 → direct, dac■ multiple → 'N alerte: ...'
+updateBrowserBadge()
+Actualizeaz■ badge-ul tabului browser cu num■rul produselor critice + pl■■i restante.
+checkCustomAlerts()
+Verific■ toate alertele personalizate (condi■ie JS). Dac■ true → triggerAlert + Telegram.
+addCustomAlert(name,cond,msg)
+Adaug■ alert■ cu condi■ie JS arbitrar■: ex: 'stock.filter(p=>p.qty===0).length > 5'.
+sendDailyReport()
+Raport zilnic automat la ora configurat■ (default 8:00): top 5 critice pe Telegram.
+
+
+--- PAGE 9 ---
+
+Func■ie
+Descriere
+setupDailyReport()
+Configureaz■ intervalul pentru sendDailyReport() cu ora din settings.
+sendWeeklyDigest()
+Luni diminea■a: anomalii AI s■pt■mâna curent■ vs precedent■ pe Telegram.
+checkGoals() / setStockGoal()
+Obiective stoc (ex: 'valoare stoc > 50.000 RON'). Progres vizual în dashboard.
+checkBudgetAlert()
+Dac■ cheltuielile lunii dep■■esc bugetul setat → alert■ imediat■.
+setMonthlyBudget(amount)
+Seteaz■ bugetul lunar de achizi■ii. Comparat cu totalul recep■iilor.
+checkSuspiciousMovement()
+Dac■ o opera■ie e de >3× media zilnic■ → log + alert■ admin + Telegram.
+scheduleRestart()
+Repornire automat■ a motorului vocal dac■ nu a primit comenzi în >30 minute.
+checkDailySummary()
+Verific■ dac■ rezumatul zilnic a fost trimis. Dac■ nu → trimite la ora 18:00.
+■ 9. Securitate & Permisiuni — 12 func■ii
+Func■ie
+Descriere
+checkPermission(action) / canDo()
+Admin: toate. Operator: editare+rapoarte, f■r■ ■tergere. Viewer: doar citire. Contabil: rapoarte+export.
+setSecurityPin() / openPinModal()
+PIN separat pentru opera■ii sensibile (■tergere, export, transfer mare).
+checkRateLimit(userId)
+Max 30 opera■ii/minut per utilizator. Previne abuse accidental sau inten■ionat.
+togglePresentationMode()
+Blureaz■ toate pre■urile ■i costurile pentru prezent■ri la clien■i sau la audit extern.
+fireWebhook(event,data)
+Trimite event la URL-ul Zapier/Make/n8n configurat. Mode: no-cors pentru CORS bypass.
+setWebhookUrl(url)
+Salveaz■ URL-ul webhook în settings. Testat la configurare.
+getAPILink()
+Genereaz■ link API public read-only cu cheie unic■. Refresh genereaz■ cheie nou■.
+showSessionLog()
+Log sesiuni: cine, de unde, când, ce browser, ce ac■iune a f■cut.
+logUserSession(action)
+Înregistreaz■ fiecare ac■iune important■ cu metadata complet.
+checkLoginLockout()
+5 încerc■ri gre■ite în 5 minute → cont blocat temporar + alert■ Telegram admin.
+generatePublicLink()
+Link shareable cu token temporar pentru vizualizare read-only a stocului.
+isBlacklisted(name) / addToBlacklist()
+Blacklist furnizori sau clien■i problematici. Alert■ la orice interac■iune.
+■ 10. Multi-Depozit, Integr■ri & Sistem — 30+ func■ii
+Func■ie
+Descriere
+loadConsolidatedStock()
+Stoc din TOATE depozitele Firebase: consolidat per produs cu total ■i detalii per loca■ie.
+transferBetweenDepots(prodId,qty,target)
+Transfer real Firebase: scade din depozitul curent, adaug■ în depozitul destina■ie atomic.
+showConsolidatedStock()
+Tabel consolidat: produs / total qty / distribuit pe depozite (Cluj:50, Buc:30, Ia■i:20).
+openComparatieDep()
+Compara■ie grafic■ stoc între depozite: care depozit are cel mai mult/mai pu■in din fiecare produs.
+
+
+--- PAGE 10 ---
+
+Func■ie
+Descriere
+suggestAutoTransfer()
+AI sugereaz■: 'Depozitul Cluj are 200 ■uruburi, Ia■i are 0 — transfer■ 100'.
+multiDepotBalance()
+Echilibrare automat■: redistribuie stocul excesiv din depozitele bogate la cele s■race.
+syncToDropbox()
+Backup JSON complet (stoc + clien■i + log) pe Dropbox cu token API personal.
+exportToGoogleSheets()
+Export direct în Google Sheets prin API. Actualizeaz■ un sheet dedicat la cerere.
+importWooCommerceOrders(url,key,secret)
+Import comenzi 'processing' din WooCommerce → scade din stoc automat.
+syncToEcommerce()
+Sincronizare cantit■■i stoc cu magazinul online configurat (WooCommerce/Shopify).
+importFromInvoicePDF(file)
+AI cite■te factura PDF → extrage produse, cantit■■i, pre■uri → import în stoc.
+generateProforma(client,items)
+Factur■ proform■ PDF profesional■ cu: date firm■, tabel produse, TVA, total.
+generatePackingList(orderId)
+Packing list cu: produse, cantit■■i, loca■ii în depozit, greutate total■.
+checkScheduledTasks()
+Verific■ la fiecare minut task-urile programate (backup, raport, inventar) ■i le execut■.
+addScheduledTask(name,hour,min,action)
+Programeaz■ o ac■iune la ora dorit■ zilnic (ex: backup la 00:00).
+doAutoBackup()
+Backup automat Firebase la miezul nop■ii. P■streaz■ ultimele 30 de backup-uri.
+queueOfflineOperation(op)
+Salveaz■ opera■ia în localStorage când e offline. La reconectare → syncOfflineQueue().
+syncOfflineQueue()
+La reconectare: proceseaz■ toate opera■iile offline în ordine cu timestamp corect.
+checkNightMode()
+Detecteaz■ ora 22:00-07:00 → aplic■ filtru brightness 85% automat (protec■ie ochi).
+checkAutoNightMode()
+Verific■ la fiecare minut dac■ trebuie activat/dezactivat night mode.
+updateBrowserBadge()
+Badge tab browser cu num■rul total: produse critice + pl■■i restante.
+updatePWAWidget()
+Actualizeaz■ widget PWA (dac■ instalat■ ca app): num■r critice, total produse.
+generatePublicLink()
+Link public temporar (24h) pentru vizualizare stoc read-only f■r■ autentificare.
+initSwipeGestures()
+Swipe pe card: stânga (ro■u) = -1 buc, dreapta (verde) = +1 buc. Cu haptic feedback.
+initTouchGestures()
+Long-press pe card = deschide zoom cu toate detaliile. Tap = opera■ie rapid■.
+handleOrientationChange()
+Landscape: 4 coloane carduri. Portrait: 2 coloane. Auto-adaptare la rotire.
+hapticSuccess() / hapticError() / hapticWarning()
+Vibra■ie telefon la succes (50ms), eroare (100+50+100ms), avertizare (50+30+50ms).
+undoLastOperation()
+Undo instant: restaureaz■ qty anterioar■, ■terge ultima intrare din log.
+undoMultiple(steps)
+Undo multiplu pân■ la 10 pa■i înapoi. Fiecare pas cu confirmarea ce se anuleaz■.
+pushUndoState(p,type,qty)
+Salveaz■ starea curent■ în undoStack (max 10 intr■ri) înainte de fiecare opera■ie.
+openKioskMode()
+Mod kiosk touchscreen: fullscreen, f■r■ tastatur■, butoane mari, PIN rapid operatori.
+generateCustomBarcode(code)
+Genereaz■ cod de bare EAN sau QR custom pentru un produs sau document.
+generatePublicLink(depotId)
+Link unic read-only cu TTL configurabil pentru partajare stoc cu parteneri.
+■ 11. Fluxul Complet — Cum Lucreaz■ Împreun■
+
+
+--- PAGE 11 ---
+
+Exemplu complet: Comand■ vocal■ 'adaug■ 10 ■uruburi M6 pentru Ion'
+Pas
+Func■ie
+Ce face
+1
+toggleMainMic()
+Microfon activ, Web Speech API ascult■
+2
+buildRecognition()
+5 alternative, alege varianta cu mai multe cuvinte-cheie
+3
+processCommand(text)
+Distribuie la toate handler-ele în ordine
+4
+normalizeText()
+Elimin■ diacritice: '■uruburi M6' → 'suruburi m6'
+5
+extractClientName()
+Detecteaz■ 'pentru Ion' → client = 'Ion'
+6
+findProduct(['suruburi','m6'])
+Matching par■ial → g■se■te '■uruburi M6 Zincate'
+7
+parseQuantity('zece')
+10
+8
+checkPermission('out')
+Operatorul are drept s■ execute?
+9
+checkRateLimit(uid)
+Sub 30 opera■ii/minut?
+10
+checkNegativeStock(p,10)
+Exist■ 10 buc în stoc?
+11
+executeOperation('in',p,10,text,'Ion')
+Modific■ p.qty, logheaz■, alerteaz■
+12
+saveStockToFirebase()
+Sincronizare Firebase în timp real
+13
+addLog(text,result,'in','Ion')
+Înregistreaz■ în istoricul opera■iilor
+14
+checkAndAlertTelegram(p)
+Stoc sub minim? → Telegram instant
+15
+updateStats()
+Actualizeaz■ PRODUSE/CRITIC/AZI în footer
+16
+renderStock()
+Redeseneaz■ cardul produsului cu noua cantitate
+17
+speak('OK! 10 ■uruburi ad■ugate pentru Ion')
+Confirmare vocal■
+18
+pushUndoState(p,'in',10)
+Salveaz■ în undoStack pentru undo ulterior
+■ 12. Cele 4 Industrii Suportate
+■ DEPOZIT
+(122 butoane)
+■■ RESTAURANT
+(41 butoane)
+■ RETAIL
+(42 butoane)
+■■ CONSTRUC■II
+(57 butoane)
+ Gestiune stoc complet
+ Recep■ie marf■
+ Livrare cu bon
+ Transfer depozite
+ Inventar fizic
+ Etichete QR
+ Furnizori
+ Comenzi automate
+ Ingrediente & re■ete
+ Meniu cu disponibilitate
+ Comenzi mas■
+ Dashboard mese
+ Bon restaurant
+ Jurnal risip■
+ Raport vânz■ri preparate
+ Rezerv■ri mas■
+ POS simplificat
+ Schimb casierie
+ Promo■ii & reduceri
+ Program fidelitate
+ Retur client
+ Raport orar vânz■ri
+ Export list■ pre■uri
+ Top produse vândute
+ Gantt ■antiere
+ Consum per faz■
+ Tracking scule
+ ITP echipamente
+ Situa■ie lucr■ri PDF
+ Decont■ri
+ Termene+penalit■■i
+ Calculatoare materiale
+ StocVoce — stocvoce.vercel.app | 573 func■ii | Firebase + Claude AI | 2026
