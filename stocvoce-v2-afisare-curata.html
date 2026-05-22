@@ -13813,7 +13813,7 @@ function handleCommand(transcript){
   if(corrected !== transcript.trim().toLowerCase()){
     document.getElementById('transcript-display').textContent = corrected + ' ✓';
   }
-  processCommand(corrected);
+  window.dispatchVoiceCommand(corrected);
   // Mic restarts automatically after speak() finishes via utt.onend
 }
 function setMicState(state){
@@ -13834,7 +13834,7 @@ function processManual(){
   if(!currentUser){setFeedback('Conectați-vă mai întâi!','err');return;}
   document.getElementById('transcript-display').textContent=val;
   document.getElementById('manual-input').value='';
-  processCommand(val);
+  window.dispatchVoiceCommand(val);
 }
 function normalizeText(text) {
   if (!text) return '';
@@ -28816,7 +28816,7 @@ setInterval(function(){
     var value = input ? input.value.trim() : '';
     if (!value) return;
     if (input) input.value = '';
-    processCommandBridge(value);
+    window.dispatchVoiceCommand(value);
   }
   window.svCommandBridge = bridge;
   window.setFeedback = feedback;
@@ -28887,7 +28887,7 @@ setInterval(function(){
     rec.interimResults = false;
     rec.onresult = function(ev){
       var text = ev.results && ev.results[0] && ev.results[0][0] ? ev.results[0][0].transcript : '';
-      if (text) processCommandBridge(text);
+      if (text) window.dispatchVoiceCommand(text);
     };
     rec.onerror = function(ev){ feedback('Eroare microfon: ' + (ev.error || 'necunoscuta'), 'err'); bridge.recognition = null; };
     rec.onend = function(){ bridge.recognition = null; };
@@ -29214,7 +29214,7 @@ setInterval(function(){
     var value = input ? input.value.trim() : '';
     if (!value) return;
     if (input) input.value = '';
-    routeVoiceCommand(value);
+    window.dispatchVoiceCommand(value);
   };
   window.toggleMainMic = function(){
     var Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -29243,7 +29243,7 @@ setInterval(function(){
       if (finalText.trim()) {
         var command = finalText.trim();
         finalText = '';
-        routeVoiceCommand(command);
+        window.dispatchVoiceCommand(command);
       }
     };
     rec.onerror = function(ev){ say('Eroare microfon: ' + (ev.error || 'necunoscuta') + '. Verifica permisiunea microfonului.', 'err'); b.recognition = null; var mic = el('mic-btn'); if (mic) mic.classList.remove('listening'); };
@@ -31492,6 +31492,60 @@ body.sv-site-tablet-mode .sv-site-roster-panel .sv-site-worker-card{min-width:31
   window.addEventListener('load', function(){ setTimeout(render, 500); setTimeout(render, 1500); });
   setInterval(function(){ checkMaterialAlerts(); render(); }, 30000);
   setInterval(updateFloatVisibility, 1000);
+})();
+</script>
+<script id="sv-unified-voice-dispatch">
+(function(){
+  if (window.__svUnifiedVoiceDispatchReady) return;
+  window.__svUnifiedVoiceDispatchReady = true;
+  var lastText = '';
+  var lastAt = 0;
+  function el(id){ return document.getElementById(id); }
+  function showTranscript(text){
+    var box = el('transcript-display');
+    if (box) box.textContent = text;
+  }
+  function say(message, type){
+    if (typeof window.setFeedback === 'function') window.setFeedback(message, type || '');
+  }
+  window.dispatchVoiceCommand = function(text){
+    var command = String(text || '').trim();
+    if (!command) return false;
+    showTranscript(command);
+    var now = Date.now();
+    var key = command.toLowerCase();
+    if (key === lastText && now - lastAt < 1200) return true;
+    lastText = key;
+    lastAt = now;
+    try {
+      if (window.svSiteCommandCenter && typeof window.svSiteCommandCenter.process === 'function') {
+        if (window.svSiteCommandCenter.process(command)) return true;
+      }
+    } catch(e) {
+      console.warn('Site voice dispatch error:', e);
+    }
+    try {
+      if (typeof window.processCommand === 'function' && window.processCommand !== window.dispatchVoiceCommand) {
+        return window.processCommand(command);
+      }
+      if (window.svVoiceAI && typeof window.svVoiceAI.route === 'function') {
+        return window.svVoiceAI.route(command);
+      }
+    } catch(e) {
+      console.warn('Voice dispatch error:', e);
+      say('Comanda vocală a fost auzită, dar nu a putut fi executată.', 'err');
+      return false;
+    }
+    say('Comanda vocală a fost auzită, dar motorul de comenzi nu este încă pornit.', 'warn');
+    return false;
+  };
+  window.processManual = function(){
+    var input = el('manual-input');
+    var value = input ? input.value.trim() : '';
+    if (!value) return false;
+    if (input) input.value = '';
+    return window.dispatchVoiceCommand(value);
+  };
 })();
 </script>
 </body>
