@@ -5217,6 +5217,17 @@ document.addEventListener('DOMContentLoaded', function() {
     try { if (window.firebase && firebase.auth) return firebase.auth(); } catch(e) {}
     return null;
   }
+  function waitAuthSvc(timeoutMs){
+    var start = Date.now();
+    return new Promise(function(resolve){
+      (function check(){
+        var svc = authSvc();
+        if (svc) return resolve(svc);
+        if (Date.now() - start > (timeoutMs || 10000)) return resolve(null);
+        setTimeout(check, 250);
+      })();
+    });
+  }
   function dbSvc(){
     try { if (window.db && window.db.ref) return window.db; } catch(e) {}
     try { if (typeof db !== 'undefined' && db && db.ref) return db; } catch(e) {}
@@ -5249,10 +5260,14 @@ document.addEventListener('DOMContentLoaded', function() {
       var pass = (el('login-pass') || {}).value || '';
       var button = el('login-btn') || document.querySelector('#tab-login button');
       if (!email || !pass) { msg('login-error', 'Completeaza emailul si parola.', false); return; }
-      var a = authSvc();
-      if (!a) { msg('login-error', 'Autentificarea nu este incarcata. Deschide pagina prin http://127.0.0.1:8765 si reincarca.', false); return; }
       busy(button, true);
+      msg('login-error', 'Se conecteaza autentificarea...', true);
       try {
+        var a = await waitAuthSvc(10000);
+        if (!a) {
+          msg('login-error', 'Firebase Auth nu s-a incarcat. Reincarca pagina sau deschide varianta Vercel/HTTPS.', false);
+          return;
+        }
         try {
           if (a.setPersistence && window.firebase && firebase.auth && firebase.auth.Auth) {
             await a.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
@@ -5282,10 +5297,13 @@ document.addEventListener('DOMContentLoaded', function() {
       var button = el('reg-btn') || document.querySelector('#tab-register button:last-of-type');
       if (!name || !depot || !email || !pass) { msg('reg-error', 'Completeaza numele, depozitul, emailul si parola.', false); return; }
       if (pass2 && pass2.value && pass2.value !== pass) { msg('reg-error', 'Parolele nu se potrivesc.', false); return; }
-      var a = authSvc();
-      if (!a) { msg('reg-error', 'Autentificarea nu este incarcata. Deschide pagina prin http://127.0.0.1:8765 si reincarca.', false); return; }
       busy(button, true);
       try {
+        var a = await waitAuthSvc(10000);
+        if (!a) {
+          msg('reg-error', 'Firebase Auth nu s-a incarcat. Reincarca pagina sau deschide varianta Vercel/HTTPS.', false);
+          return;
+        }
         var cred = await a.createUserWithEmailAndPassword(email, pass);
         var user = cred && cred.user ? cred.user : a.currentUser;
         if (user && user.updateProfile) { try { await user.updateProfile({ displayName: name }); } catch(e) {} }
@@ -28264,6 +28282,18 @@ function svGetAuthService() {
   return null;
 }
 
+function svWaitAuthService(timeoutMs) {
+  var start = Date.now();
+  return new Promise(function(resolve) {
+    (function check() {
+      var svc = svGetAuthService();
+      if (svc) return resolve(svc);
+      if (Date.now() - start > (timeoutMs || 10000)) return resolve(null);
+      setTimeout(check, 250);
+    })();
+  });
+}
+
 function svGetDbService() {
   try { if (typeof db !== 'undefined' && db && db.ref) return db; } catch(e) {}
   try { if (window.db && window.db.ref) return window.db; } catch(e) {}
@@ -28304,13 +28334,14 @@ window.doLogin = async function() {
     svAuthMessage('login-error', 'Completeaza emailul si parola.', false);
     return;
   }
-  var authService = svGetAuthService();
-  if (!authService) {
-    svAuthMessage('login-error', 'Autentificarea nu este incarcata. Deschide pagina prin http://127.0.0.1:8765 si reincarca.', false);
-    return;
-  }
   svSetAuthBusy(button, true);
+  svAuthMessage('login-error', 'Se conecteaza autentificarea...', true);
   try {
+    var authService = await svWaitAuthService(10000);
+    if (!authService) {
+      svAuthMessage('login-error', 'Firebase Auth nu s-a incarcat. Reincarca pagina sau deschide varianta Vercel/HTTPS.', false);
+      return;
+    }
     try {
       if (authService.setPersistence && window.firebase && firebase.auth && firebase.auth.Auth) {
         await authService.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
@@ -28349,13 +28380,13 @@ window.doRegister = async function() {
     svAuthMessage('reg-error', 'Parolele nu se potrivesc.', false);
     return;
   }
-  var authService = svGetAuthService();
-  if (!authService) {
-    svAuthMessage('reg-error', 'Autentificarea nu este incarcata. Deschide pagina prin http://127.0.0.1:8765 si reincarca.', false);
-    return;
-  }
   svSetAuthBusy(button, true);
   try {
+    var authService = await svWaitAuthService(10000);
+    if (!authService) {
+      svAuthMessage('reg-error', 'Firebase Auth nu s-a incarcat. Reincarca pagina sau deschide varianta Vercel/HTTPS.', false);
+      return;
+    }
     var cred = await authService.createUserWithEmailAndPassword(email, pass);
     var user = cred && cred.user ? cred.user : (authService.currentUser || null);
     if (user && user.updateProfile) {
