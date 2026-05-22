@@ -5253,7 +5253,17 @@ document.addEventListener('DOMContentLoaded', function() {
       if (!a) { msg('login-error', 'Autentificarea nu este incarcata. Deschide pagina prin http://127.0.0.1:8765 si reincarca.', false); return; }
       busy(button, true);
       try {
+        try {
+          if (a.setPersistence && window.firebase && firebase.auth && firebase.auth.Auth) {
+            await a.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+          }
+          localStorage.removeItem('sv_explicit_logout');
+        } catch(e) {}
         await a.signInWithEmailAndPassword(email, pass);
+        try {
+          localStorage.setItem('sv_session_active', '1');
+          localStorage.setItem('sv_last_auth_seen', String(Date.now()));
+        } catch(e) {}
         var screen = el('auth-screen');
         if (screen) screen.style.display = 'none';
         if (window.setFeedback) setFeedback('Conectat. Comenzile sunt active.', 'ok');
@@ -13440,6 +13450,11 @@ firebase.initializeApp({
 const auth = firebase.auth();
 const db   = firebase.database();
 const storage = firebase.storage();
+try {
+  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+} catch(e) {
+  console.warn('Auth persistence setup failed:', e);
+}
 
 // ── ADMIN ──
 const ADMIN_EMAIL = 'now_lord@yahoo.com';
@@ -13460,6 +13475,51 @@ let wakeTimeout  = null;
 let synth = window.speechSynthesis;
 let speechSupported = 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window;
 const WAKE_WORDS = ['stoc','stock','stocuri','doc'];
+let authNullTimer = null;
+const AUTH_NULL_GRACE_MS = 45000;
+
+function markSessionActive(user) {
+  try {
+    localStorage.setItem('sv_session_active', '1');
+    localStorage.setItem('sv_last_auth_seen', String(Date.now()));
+    if (user && user.email) localStorage.setItem('sv_last_auth_email', user.email);
+    localStorage.removeItem('sv_explicit_logout');
+  } catch(e) {}
+}
+
+function markExplicitLogout() {
+  try {
+    localStorage.setItem('sv_explicit_logout', '1');
+    localStorage.removeItem('sv_session_active');
+  } catch(e) {}
+}
+
+function hadRecentSession() {
+  try {
+    if (localStorage.getItem('sv_explicit_logout') === '1') return false;
+    if (localStorage.getItem('sv_session_active') !== '1') return false;
+    const last = Number(localStorage.getItem('sv_last_auth_seen') || 0);
+    return last && Date.now() - last < 12 * 60 * 60 * 1000;
+  } catch(e) {
+    return false;
+  }
+}
+
+function showAuthScreenSafely() {
+  const screen = document.getElementById('auth-screen');
+  if (screen) screen.style.display = 'flex';
+  const spinner = document.getElementById('auth-spinner');
+  if (spinner) spinner.style.display = 'none';
+  const loginBtn = document.getElementById('login-btn');
+  if (loginBtn) loginBtn.disabled = false;
+}
+
+function keepAppVisibleDuringAuthRefresh() {
+  const screen = document.getElementById('auth-screen');
+  if (screen) screen.style.display = 'none';
+  const fb = document.getElementById('feedback-display');
+  if (fb) fb.textContent = 'Reconectez sesiunea...';
+}
 
 window.dispatchVoiceCommand = function(text){
   const command = String(text || '').trim();
@@ -13573,6 +13633,8 @@ async function _doLoginReal() {
   const loginBtn=document.getElementById('login-btn'); if(loginBtn) loginBtn.disabled=true;
 
   try {
+    try { await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL); } catch(e) {}
+    localStorage.removeItem('sv_explicit_logout');
     await auth.signInWithEmailAndPassword(email, pass);
   } catch(e) {
     let msg='Email sau parolă incorectă!';
@@ -13587,6 +13649,7 @@ async function _doLoginReal() {
 
 // ── LOGOUT ──
 function doLogout() {
+  markExplicitLogout();
   stopEngine();
   document.getElementById('secret-dashboard').style.display = 'none';
   document.getElementById('admin-panel').style.display = 'none';
@@ -13595,7 +13658,9 @@ function doLogout() {
 
 // ── AUTH STATE CHANGE ──
 auth.onAuthStateChanged(async (user) => {
+  clearTimeout(authNullTimer);
   if (user) {
+    markSessionActive(user);
     currentUser = user;
     // Load profile
     const snap = await db.ref('users/' + user.uid).once('value');
@@ -13683,13 +13748,28 @@ auth.onAuthStateChanged(async (user) => {
     setTimeout(function(){if(typeof updateStockValueDisplay==="function")updateStockValueDisplay();},2000);
     setFeedback(`✅ ${userProfile.depot} – gata de comenzi!`, 'ok');
   } else {
+    if (hadRecentSession()) {
+      keepAppVisibleDuringAuthRefresh();
+      authNullTimer = setTimeout(() => {
+        if (auth.currentUser || hadRecentSession()) {
+          if (auth.currentUser) return;
+          try { localStorage.removeItem('sv_session_active'); } catch(e) {}
+        }
+        currentUser = null;
+        userProfile = null;
+        stock = [];
+        log   = [];
+        showAuthScreenSafely();
+        renderStock();
+        renderLog();
+      }, AUTH_NULL_GRACE_MS);
+      return;
+    }
     currentUser = null;
     userProfile = null;
     stock = [];
     log   = [];
-    document.getElementById('auth-screen').style.display = 'flex';
-    document.getElementById('auth-spinner').style.display = 'none';
-    document.getElementById('login-btn').disabled = false;
+    showAuthScreenSafely();
     renderStock();
     renderLog();
   }
@@ -28049,6 +28129,10 @@ window.askAdvancedBot = async function(question) {
 };
 
 window.doLogout = function() {
+  try {
+    localStorage.setItem('sv_explicit_logout', '1');
+    localStorage.removeItem('sv_session_active');
+  } catch(e) {}
   try { if (typeof stopEngine === 'function') stopEngine(); } catch(e) {}
   try { if (window.recognition) window.recognition.abort(); } catch(e) {}
   try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch(e) {}
@@ -28227,7 +28311,17 @@ window.doLogin = async function() {
   }
   svSetAuthBusy(button, true);
   try {
+    try {
+      if (authService.setPersistence && window.firebase && firebase.auth && firebase.auth.Auth) {
+        await authService.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+      }
+      localStorage.removeItem('sv_explicit_logout');
+    } catch(e) {}
     await authService.signInWithEmailAndPassword(email, password);
+    try {
+      localStorage.setItem('sv_session_active', '1');
+      localStorage.setItem('sv_last_auth_seen', String(Date.now()));
+    } catch(e) {}
     var screen = svAuthEl('auth-screen');
     if (screen) screen.style.display = 'none';
     svSetFeedback('Conectat. Comenzile sunt active.', 'ok');
