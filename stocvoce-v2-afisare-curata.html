@@ -565,8 +565,7 @@ function printProductLabel(productId) {
   const depot = userProfile ? userProfile.depot : '';
   const barcodeSVG = generateBarcode(p.sku || p.id, p.name);
   const win = window.open('','_blank','width=400,height=300');
-  win.document.write('<html><head><title>Etichetă ' + p.name + '</title><style>body{font-family:Arial,sans-serif;margin:10px;width:200px}h3{margin:4px 0;font-size:13px}.loc{background:#f0f0f0;border-radius:4px;padding:2px 6px;font-size:11px;margin:3px 0;display:inline-block}.price{font-size:18px;font-weight:bold;color:#00b87a}@media print{button{display:none}}</style>
-');
+  win.document.write('<html><head><title>Etichetă ' + p.name + '</title><style>body{font-family:Arial,sans-serif;margin:10px;width:200px}h3{margin:4px 0;font-size:13px}.loc{background:#f0f0f0;border-radius:4px;padding:2px 6px;font-size:11px;margin:3px 0;display:inline-block}.price{font-size:18px;font-weight:bold;color:#00b87a}@media print{button{display:none}}</style>');
   win.document.write('<div style="border:2px solid #000;padding:8px;width:180px">');
   win.document.write('<h3>' + p.name + '</h3>');
   win.document.write('<div class="loc">📍 ' + (p.loc||'—') + '</div><br>');
@@ -5417,6 +5416,135 @@ document.addEventListener('DOMContentLoaded', function() {
     <span class="stat-label" id="stat-label-user">OPERATOR</span><span class="stat-val" id="stat-user">—</span>
   </div>
 </div>
+
+<script id="sv-early-voice-bridge">
+(function(){
+  if (window.__svEarlyVoiceBridge) return;
+  window.__svEarlyVoiceBridge = true;
+  var earlyRecognition = null;
+  function el(id){ return document.getElementById(id); }
+  function feedback(message, type){
+    var box = el('feedback-display');
+    if (box) box.textContent = message || '';
+    if (box) box.dataset.type = type || '';
+  }
+  function transcript(text){
+    var box = el('transcript-display');
+    if (box) box.textContent = text || '';
+  }
+  function route(text){
+    var command = String(text || '').trim();
+    if (!command) return false;
+    transcript(command);
+    try {
+      if (window.svSiteCommandCenter && typeof window.svSiteCommandCenter.process === 'function') {
+        if (window.svSiteCommandCenter.process(command)) return true;
+      }
+    } catch(e) { console.warn('svSiteCommandCenter voice error:', e); }
+    try {
+      if (window.svVoiceAI && typeof window.svVoiceAI.route === 'function') {
+        return window.svVoiceAI.route(command);
+      }
+    } catch(e) { console.warn('svVoiceAI route error:', e); }
+    try {
+      if (typeof window.processCommand === 'function' && window.processCommand !== route) {
+        return window.processCommand(command);
+      }
+    } catch(e) { console.warn('processCommand route error:', e); }
+    window.__svPendingVoiceCommand = command;
+    feedback('Comanda a fost auzită. Motorul încă se încarcă, apasă OK din nou în câteva secunde.', 'warn');
+    return false;
+  }
+  window.dispatchVoiceCommand = route;
+  window.svEarlyProcessManual = function(){
+    var input = el('manual-input');
+    var value = input ? input.value.trim() : '';
+    if (!value) return false;
+    if (input) input.value = '';
+    return route(value);
+  };
+  window.processManual = window.processManual || window.svEarlyProcessManual;
+  window.setMode = window.setMode || function(mode){
+    document.querySelectorAll('.mode-btn').forEach(function(btn){ btn.classList.toggle('active', btn.id === 'btn-' + mode); });
+    feedback(mode === 'manual' ? 'Mod manual activ.' : 'Mod voce activ.', 'ok');
+  };
+  window.svEarlyToggleMainMic = function(){
+    var Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!Speech) { feedback('Vocea nu este disponibilă în acest browser. Folosește Chrome/Edge și permite microfonul.', 'warn'); return; }
+    if (earlyRecognition) {
+      try { earlyRecognition.stop(); } catch(e) {}
+      earlyRecognition = null;
+      feedback('Microfon oprit.', 'warn');
+      return;
+    }
+    var rec = new Speech();
+    rec.lang = localStorage.getItem('sv_voice_lang') || navigator.language || 'ro-RO';
+    rec.continuous = false;
+    rec.interimResults = true;
+    rec.onstart = function(){ feedback('Ascult comanda...', 'ok'); var b = el('mic-btn'); if (b) b.classList.add('listening'); };
+    rec.onresult = function(ev){
+      var finalText = '', interim = '';
+      for (var i = ev.resultIndex; i < ev.results.length; i++) {
+        var phrase = ev.results[i][0].transcript;
+        if (ev.results[i].isFinal) finalText += ' ' + phrase;
+        else interim += phrase;
+      }
+      transcript((finalText || interim).trim());
+      if (finalText.trim()) route(finalText.trim());
+    };
+    rec.onerror = function(ev){ feedback('Eroare microfon: ' + (ev.error || 'necunoscută'), 'err'); earlyRecognition = null; var b = el('mic-btn'); if (b) b.classList.remove('listening'); };
+    rec.onend = function(){ earlyRecognition = null; var b = el('mic-btn'); if (b) b.classList.remove('listening'); };
+    earlyRecognition = rec;
+    try { rec.start(); } catch(e) { feedback('Nu pot porni microfonul: ' + e.message, 'err'); earlyRecognition = null; }
+  };
+  window.toggleMainMic = window.toggleMainMic || window.svEarlyToggleMainMic;
+  function runManual(){
+    try {
+      if (typeof window.processManual === 'function') return window.processManual();
+    } catch(e) { console.warn('processManual failed, using early bridge:', e); }
+    return window.svEarlyProcessManual();
+  }
+  function runMic(){
+    try {
+      if (typeof window.toggleMainMic === 'function') return window.toggleMainMic();
+    } catch(e) { console.warn('toggleMainMic failed, using early bridge:', e); }
+    return window.svEarlyToggleMainMic();
+  }
+  function bindVoiceControls(){
+    document.addEventListener('click', function(e){
+      var manual = e.target && e.target.closest ? e.target.closest('#manual-btn') : null;
+      if (manual) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        runManual();
+        return;
+      }
+      var mic = e.target && e.target.closest ? e.target.closest('#mic-btn') : null;
+      if (mic) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        runMic();
+        return;
+      }
+      var mode = e.target && e.target.closest ? e.target.closest('.mode-btn') : null;
+      if (mode && mode.id) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        window.setMode(mode.id.replace('btn-', ''));
+      }
+    }, true);
+    document.addEventListener('keydown', function(e){
+      if (e.key === 'Enter' && e.target && e.target.id === 'manual-input') {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        runManual();
+      }
+    }, true);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindVoiceControls);
+  else bindVoiceControls();
+})();
+</script>
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -13200,8 +13328,7 @@ Gestionar: ' + (userProfile?userProfile.name:'') + '
 ';
   });
   const totalVal = stock.reduce((s,p) => s+p.qty*(p.price_buy||0), 0);
-  nirContent += '-'.repeat(80) + '
-TOTAL: ' + totalVal.toFixed(2) + ' RON';
+  nirContent += '-'.repeat(80) + '\nTOTAL: ' + totalVal.toFixed(2) + ' RON';
 
   const blob = new Blob([nirContent], {type:'text/plain;charset=utf-8'});
   const url = URL.createObjectURL(blob);
