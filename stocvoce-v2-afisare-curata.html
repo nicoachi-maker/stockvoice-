@@ -5440,7 +5440,7 @@ document.addEventListener('DOMContentLoaded', function() {
   <div class="stat-item" style="margin-left:auto">
     <button onclick="safeCall('openCalendarModal')" style="background:none;border:1px solid #1e2530;border-radius:6px;color:#ffa502;font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 8px;cursor:pointer;letter-spacing:1px;margin-right:8px">📅 CALENDAR</button>
     <button id="settings-btn" onclick="var m=document.getElementById('settings-modal');if(m){m.style.display='flex';m.classList.add('show');}if(typeof openSettingsModal==='function'){try{openSettingsModal();}catch(e){}}" style="background:none;border:1px solid #a78bfa;border-radius:6px;color:#a78bfa;font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 8px;cursor:pointer;letter-spacing:1px;margin-right:8px">⚙ SETĂRI</button>
-    <button id="logout-btn" onclick="try{if(typeof stopEngine==='function')stopEngine();}catch(e){}try{if(window.speechSynthesis)window.speechSynthesis.cancel();}catch(e){}try{if(typeof auth!=='undefined'&&auth&&auth.signOut)auth.signOut();else if(window.firebase&&firebase.auth)firebase.auth().signOut();}catch(e){}var a=document.getElementById('auth-screen');if(a)a.style.display='flex';var f=document.getElementById('feedback-display');if(f)f.textContent='Ai ieșit din cont.';" style="background:none;border:1px solid #ff4757;border-radius:6px;color:#ff4757;font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 8px;cursor:pointer;letter-spacing:1px;margin-right:8px">⎋ IEȘIRE</button>
+    <button id="logout-btn" onclick="try{localStorage.setItem('sv_explicit_logout','1');localStorage.removeItem('sv_session_active');window.__svAllowSignOut=true;}catch(e){}try{if(typeof stopEngine==='function')stopEngine();}catch(e){}try{if(window.speechSynthesis)window.speechSynthesis.cancel();}catch(e){}try{if(typeof auth!=='undefined'&&auth&&auth.signOut)auth.signOut();else if(window.firebase&&firebase.auth)firebase.auth().signOut();}catch(e){}var a=document.getElementById('auth-screen');if(a)a.style.display='flex';var f=document.getElementById('feedback-display');if(f)f.textContent='Ai ieșit din cont.';" style="background:none;border:1px solid #ff4757;border-radius:6px;color:#ff4757;font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 8px;cursor:pointer;letter-spacing:1px;margin-right:8px">⎋ IEȘIRE</button>
     <span class="stat-label" id="stat-label-user">OPERATOR</span><span class="stat-val" id="stat-user">—</span>
   </div>
 </div>
@@ -13769,9 +13769,9 @@ auth.onAuthStateChanged(async (user) => {
     if (hadRecentSession()) {
       keepAppVisibleDuringAuthRefresh();
       authNullTimer = setTimeout(() => {
-        if (auth.currentUser || hadRecentSession()) {
-          if (auth.currentUser) return;
-          try { localStorage.removeItem('sv_session_active'); } catch(e) {}
+        if (hadRecentSession()) {
+          keepAppVisibleDuringAuthRefresh();
+          return;
         }
         currentUser = null;
         userProfile = null;
@@ -31790,6 +31790,61 @@ body.sv-site-tablet-mode .sv-site-roster-panel .sv-site-worker-card{min-width:31
   window.addEventListener('load', function(){ setTimeout(render, 500); setTimeout(render, 1500); });
   setInterval(function(){ checkMaterialAlerts(); render(); }, 30000);
   setInterval(updateFloatVisibility, 1000);
+})();
+</script>
+<script id="sv-session-guard">
+(function(){
+  function recentSession(){
+    try {
+      if (localStorage.getItem('sv_explicit_logout') === '1') return false;
+      if (localStorage.getItem('sv_session_active') !== '1') return false;
+      var last = Number(localStorage.getItem('sv_last_auth_seen') || 0);
+      return !!last && Date.now() - last < 12 * 60 * 60 * 1000;
+    } catch(e) {
+      return false;
+    }
+  }
+  function hideLoginIfNeeded(){
+    if (!recentSession()) return;
+    var screen = document.getElementById('auth-screen');
+    if (screen && screen.style.display !== 'none') screen.style.display = 'none';
+    var fb = document.getElementById('feedback-display');
+    if (fb && /conect|auth|sesiune/i.test(fb.textContent || '')) {
+      fb.textContent = 'Sesiune păstrată. Comenzile sunt active.';
+    }
+  }
+  function patchSignOut(){
+    try {
+      if (!window.firebase || !firebase.auth) return;
+      var a = firebase.auth();
+      if (!a || a.__svSignOutGuarded || typeof a.signOut !== 'function') return;
+      var original = a.signOut.bind(a);
+      a.signOut = function(){
+        var explicit = false;
+        try { explicit = window.__svAllowSignOut === true || localStorage.getItem('sv_explicit_logout') === '1'; } catch(e) {}
+        if (!explicit && recentSession()) {
+          hideLoginIfNeeded();
+          return Promise.resolve();
+        }
+        return original();
+      };
+      a.__svSignOutGuarded = true;
+    } catch(e) {}
+  }
+  document.addEventListener('click', function(e){
+    if (e.target && e.target.closest && e.target.closest('#logout-btn')) {
+      try {
+        window.__svAllowSignOut = true;
+        localStorage.setItem('sv_explicit_logout', '1');
+        localStorage.removeItem('sv_session_active');
+      } catch(err) {}
+    }
+  }, true);
+  window.addEventListener('storage', hideLoginIfNeeded);
+  window.addEventListener('focus', hideLoginIfNeeded);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ patchSignOut(); hideLoginIfNeeded(); });
+  else { patchSignOut(); hideLoginIfNeeded(); }
+  setInterval(function(){ patchSignOut(); hideLoginIfNeeded(); }, 1000);
 })();
 </script>
 <script src="./stocvoce-voice-engine.js?v=20260522-1"></script>
