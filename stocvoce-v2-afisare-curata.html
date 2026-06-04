@@ -31851,12 +31851,40 @@ header{background:rgba(7,10,14,.86);border-bottom:1px solid rgba(111,128,149,.22
 .sv-site-live-title{font-size:38px!important}.sv-site-command input,.sv-site-command select,.sv-site-command button{height:46px!important;border-radius:10px!important}
 .sv-site-roster-panel{height:132px!important}.sv-site-roster-panel .sv-site-list{height:82px!important}.sv-site-roster-panel .sv-site-worker-card{min-width:320px!important;height:66px!important;padding:10px 12px!important}
 .sv-site-worker-name{font-size:19px!important}.sv-site-worker-meta{font-size:11px!important}
+.sv-saas-hero{margin:0 0 16px;padding:13px 14px;border:1px solid rgba(111,128,149,.22);border-radius:12px;background:linear-gradient(135deg,rgba(0,229,160,.10),rgba(77,159,255,.07) 42%,rgba(13,17,23,.94));box-shadow:0 20px 54px rgba(0,0,0,.26);display:grid;grid-template-columns:minmax(280px,1.15fr) minmax(280px,.85fr);gap:12px;align-items:center;position:relative;overflow:hidden}
+.sv-saas-hero::before{content:'';position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,var(--sv-green),var(--sv-blue),var(--sv-violet),var(--sv-gold))}
+.sv-saas-kicker{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1.7px;text-transform:uppercase;color:var(--sv-green);margin-bottom:5px}
+.sv-saas-title{font-family:'Barlow Condensed',sans-serif;font-size:32px;line-height:.95;font-weight:900;color:#f1f5f9;letter-spacing:.2px}
+.sv-saas-title span{color:var(--sv-green)}
+.sv-saas-sub{display:none;max-width:680px;margin-top:7px;color:#9badbf;font-size:13px;line-height:1.35}
+.sv-saas-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}.sv-saas-pill{border:1px solid rgba(111,128,149,.24);background:rgba(8,12,17,.58);color:#dce5ee;border-radius:999px;padding:5px 8px;font-size:11px}.sv-saas-pill b{color:var(--sv-green);font-weight:900}
+.sv-saas-panel{border:1px solid rgba(111,128,149,.18);border-radius:10px;background:rgba(8,12,17,.62);padding:9px;display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.sv-saas-stat{border:1px solid rgba(111,128,149,.14);border-radius:8px;background:rgba(18,24,33,.74);padding:8px;min-height:54px}.sv-saas-stat span{display:block;font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1.2px;text-transform:uppercase;color:#8ea0b7;margin-bottom:4px}.sv-saas-stat b{font-family:'Barlow Condensed',sans-serif;font-size:22px;line-height:1;color:#f1f5f9}
+.sv-saas-actions{grid-column:1/-1;display:flex;gap:7px;flex-wrap:wrap}.sv-saas-actions button{height:32px;border-radius:8px;border:1px solid var(--c,var(--sv-green));background:rgba(7,17,15,.74);color:var(--c,var(--sv-green));font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:900;letter-spacing:1px;text-transform:uppercase;padding:0 10px;cursor:pointer}.sv-saas-actions button:hover{background:var(--c,var(--sv-green));color:#07110f}
 @media(max-width:1200px){main{grid-template-columns:minmax(0,1fr) 340px}.stock-grid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))!important}.sv-function-strip{grid-template-columns:1fr}.sv-vcc-grid{grid-template-columns:1fr 1fr!important}.sv-vcc-history{grid-template-columns:1fr!important;max-height:68px!important}}
-@media(max-width:900px){main{grid-template-columns:1fr;grid-template-areas:'voice' 'vcc' 'stock' 'history';grid-template-rows:auto auto auto auto;height:auto!important;overflow:visible!important}.voice-zone{margin:10px 12px 0}.sv-vcc{margin:12px 12px 0!important}.sv-vcc-grid{grid-template-columns:1fr!important}.sv-vcc-history{max-height:120px!important}.stock-area{padding:18px 12px 90px;overflow:visible!important}.sidebar{position:relative;top:auto;max-height:none;height:320px}.sv-function-strip-actions{justify-content:flex-start}.stock-grid{grid-template-columns:1fr!important}#manual-input{width:100%}.voice-manual{width:100%;display:grid;grid-template-columns:1fr auto}.sv-function-title,.sv-site-title{font-size:34px!important}}
+@media(max-width:900px){main{grid-template-columns:1fr;grid-template-areas:'voice' 'vcc' 'stock' 'history';grid-template-rows:auto auto auto auto;height:auto!important;overflow:visible!important}.voice-zone{margin:10px 12px 0}.sv-vcc{margin:12px 12px 0!important}.sv-vcc-grid{grid-template-columns:1fr!important}.sv-vcc-history{max-height:120px!important}.stock-area{padding:18px 12px 90px;overflow:visible!important}.sidebar{position:relative;top:auto;max-height:none;height:320px}.sv-function-strip-actions{justify-content:flex-start}.stock-grid{grid-template-columns:1fr!important}#manual-input{width:100%}.voice-manual{width:100%;display:grid;grid-template-columns:1fr auto}.sv-function-title,.sv-site-title{font-size:34px!important}.sv-saas-hero{grid-template-columns:1fr;padding:14px}.sv-saas-title{font-size:34px}.sv-saas-panel{grid-template-columns:1fr 1fr}.sv-saas-actions button{flex:1 1 150px}}
 </style>
 <script id="sv-world-class-polish-script">
 (function(){
   function el(id){ return document.getElementById(id); }
+  function ensureSaasHero(){
+    var stockArea = document.querySelector('.stock-area');
+    if (!stockArea || el('sv-saas-hero')) return;
+    var hero = document.createElement('section');
+    hero.id = 'sv-saas-hero';
+    hero.className = 'sv-saas-hero';
+    hero.innerHTML = '<div><div class="sv-saas-kicker">StocVoce Cloud Workspace</div><div class="sv-saas-title">Control stoc cu <span>voce AI</span></div><div class="sv-saas-sub">Panou SaaS pentru depozit, santier si operatiuni zilnice. Comenzile vocale, rapoartele, sculele si stocul raman in acelasi flux de lucru.</div><div class="sv-saas-pills"><span class="sv-saas-pill"><b>Live</b> comenzi vocale</span><span class="sv-saas-pill"><b>Pro</b> dashboard</span><span class="sv-saas-pill"><b>Tablet</b> ready</span></div></div><div class="sv-saas-panel"><div class="sv-saas-stat"><span>Produse</span><b id="sv-saas-total">0</b></div><div class="sv-saas-stat"><span>Alerte</span><b id="sv-saas-alerts">0</b></div><div class="sv-saas-stat"><span>Operator</span><b id="sv-saas-user">-</b></div><div class="sv-saas-actions"><button style="--c:var(--sv-green)" onclick="window.svFunctionCenter&&window.svFunctionCenter.open()">Functii</button><button style="--c:var(--sv-gold)" onclick="window.svSiteCommandCenter&&window.svSiteCommandCenter.open()">Scule santier</button><button style="--c:var(--sv-violet)" data-sv-report-open>Raport executiv</button></div></div>';
+    stockArea.insertBefore(hero, stockArea.firstChild);
+  }
+  function updateSaasHero(){
+    ensureSaasHero();
+    var total = el('stat-total');
+    var alerts = el('stat-low');
+    var user = el('stat-user');
+    if (el('sv-saas-total')) el('sv-saas-total').textContent = total ? total.textContent.trim() || '0' : '0';
+    if (el('sv-saas-alerts')) el('sv-saas-alerts').textContent = alerts ? alerts.textContent.trim() || '0' : '0';
+    if (el('sv-saas-user')) el('sv-saas-user').textContent = user ? (user.textContent.trim() || '-') : '-';
+  }
   function polish(){
     document.body.classList.add('sv-world-class');
     var stockArea = document.querySelector('.stock-area');
@@ -31883,6 +31911,7 @@ header{background:rgba(7,10,14,.86);border-bottom:1px solid rgba(111,128,149,.22
     if (search) search.setAttribute('placeholder','Caută produs, cod, categorie sau locație...');
     var manual = el('manual-input');
     if (manual) manual.setAttribute('placeholder','Ex: George a luat bormașina / adaugă 10 șuruburi M6');
+    updateSaasHero();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', polish); else polish();
   window.addEventListener('load', function(){ setTimeout(polish, 300); setTimeout(polish, 1400); });
