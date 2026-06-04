@@ -31867,8 +31867,14 @@ header{background:rgba(7,10,14,.86);border-bottom:1px solid rgba(111,128,149,.22
 .sv-ai-inbox-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px;max-height:148px;overflow:auto;padding-right:4px}.sv-ai-inbox-list::-webkit-scrollbar{width:5px}.sv-ai-inbox-list::-webkit-scrollbar-thumb{background:#263140;border-radius:999px}
 .sv-ai-task{border:1px solid rgba(111,128,149,.18);border-left:3px solid var(--task,#00e5a0);border-radius:9px;background:rgba(8,12,17,.68);padding:8px;min-height:78px;display:flex;flex-direction:column;gap:5px}.sv-ai-task h4{margin:0;color:#f1f5f9;font-size:13px;line-height:1.15}.sv-ai-task p{margin:0;color:#8ea0b7;font-size:11px;line-height:1.28}.sv-ai-task-meta{font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:1.1px;text-transform:uppercase;color:var(--task,#00e5a0)}.sv-ai-task-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto}.sv-ai-task-actions button{height:25px;border-radius:7px;border:1px solid var(--task,#00e5a0);background:rgba(7,17,15,.65);color:var(--task,#00e5a0);font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:900;letter-spacing:.8px;text-transform:uppercase;padding:0 7px;cursor:pointer}
 .sv-ai-task.empty{border-left-color:#4d9fff}.sv-ai-task.empty h4{color:#dce5ee}
+.sv-smart-actions{margin:0 0 18px;padding:10px;border:1px solid rgba(77,159,255,.22);border-radius:12px;background:linear-gradient(135deg,rgba(77,159,255,.07),rgba(8,12,17,.88));box-shadow:0 16px 42px rgba(0,0,0,.2)}
+.sv-smart-actions-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}.sv-smart-actions-kicker{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#4d9fff}.sv-smart-actions-title{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;line-height:1;color:#f1f5f9}.sv-smart-actions-sub{color:#8ea0b7;font-size:11px;margin-top:3px}
+.sv-smart-actions-badge{border:1px solid rgba(77,159,255,.28);border-radius:999px;background:rgba(8,12,17,.62);color:#4d9fff;font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:900;letter-spacing:1px;text-transform:uppercase;padding:7px 9px;white-space:nowrap}
+.sv-smart-actions-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;max-height:124px;overflow:auto;padding-right:4px}.sv-smart-actions-grid::-webkit-scrollbar{width:5px}.sv-smart-actions-grid::-webkit-scrollbar-thumb{background:#263140;border-radius:999px}
+.sv-smart-action{min-height:62px;border:1px solid var(--action,#4d9fff);border-radius:10px;background:rgba(8,12,17,.68);color:#f1f5f9;text-align:left;padding:8px 9px;cursor:pointer;display:flex;flex-direction:column;gap:4px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.02)}.sv-smart-action:hover{background:linear-gradient(135deg,color-mix(in srgb,var(--action,#4d9fff) 22%,rgba(8,12,17,.9)),rgba(8,12,17,.86));transform:translateY(-1px)}
+.sv-smart-action b{font-family:'JetBrains Mono',monospace;font-size:10px;line-height:1.2;letter-spacing:.8px;text-transform:uppercase;color:var(--action,#4d9fff)}.sv-smart-action span{font-size:11px;line-height:1.25;color:#9badbf}
 @media(max-width:1200px){main{grid-template-columns:minmax(0,1fr) 340px}.stock-grid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))!important}.sv-function-strip{grid-template-columns:1fr}.sv-vcc-grid{grid-template-columns:1fr 1fr!important}.sv-vcc-history{grid-template-columns:1fr!important;max-height:68px!important}}
-@media(max-width:900px){main{grid-template-columns:1fr;grid-template-areas:'voice' 'vcc' 'stock' 'history';grid-template-rows:auto auto auto auto;height:auto!important;overflow:visible!important}.voice-zone{margin:10px 12px 0}.sv-vcc{margin:12px 12px 0!important}.sv-vcc-grid{grid-template-columns:1fr!important}.sv-vcc-history{max-height:120px!important}.stock-area{padding:18px 12px 90px;overflow:visible!important}.sidebar{position:relative;top:auto;max-height:none;height:320px}.sv-function-strip-actions{justify-content:flex-start}.stock-grid{grid-template-columns:1fr!important}#manual-input{width:100%}.voice-manual{width:100%;display:grid;grid-template-columns:1fr auto}.sv-function-title,.sv-site-title{font-size:34px!important}.sv-saas-hero{grid-template-columns:1fr;padding:14px}.sv-saas-title{font-size:34px}.sv-saas-panel{grid-template-columns:1fr 1fr}.sv-saas-actions button{flex:1 1 150px}.sv-ai-inbox-head{flex-direction:column}.sv-ai-inbox-score{text-align:left}.sv-ai-inbox-list{grid-template-columns:1fr;max-height:360px}}
+@media(max-width:900px){main{grid-template-columns:1fr;grid-template-areas:'voice' 'vcc' 'stock' 'history';grid-template-rows:auto auto auto auto;height:auto!important;overflow:visible!important}.voice-zone{margin:10px 12px 0}.sv-vcc{margin:12px 12px 0!important}.sv-vcc-grid{grid-template-columns:1fr!important}.sv-vcc-history{max-height:120px!important}.stock-area{padding:18px 12px 90px;overflow:visible!important}.sidebar{position:relative;top:auto;max-height:none;height:320px}.sv-function-strip-actions{justify-content:flex-start}.stock-grid{grid-template-columns:1fr!important}#manual-input{width:100%}.voice-manual{width:100%;display:grid;grid-template-columns:1fr auto}.sv-function-title,.sv-site-title{font-size:34px!important}.sv-saas-hero{grid-template-columns:1fr;padding:14px}.sv-saas-title{font-size:34px}.sv-saas-panel{grid-template-columns:1fr 1fr}.sv-saas-actions button{flex:1 1 150px}.sv-ai-inbox-head,.sv-smart-actions-head{flex-direction:column;align-items:flex-start}.sv-ai-inbox-score{text-align:left}.sv-ai-inbox-list,.sv-smart-actions-grid{grid-template-columns:1fr;max-height:360px}}
 </style>
 <script id="sv-world-class-polish-script">
 (function(){
@@ -31923,6 +31929,47 @@ header{background:rgba(7,10,14,.86);border-bottom:1px solid rgba(111,128,149,.22
     var actions = (t.actions || []).map(function(a){ return '<button type="button" data-sv-ai-action="' + svEsc(a.action) + '">' + svEsc(a.label) + '</button>'; }).join('');
     return '<article class="sv-ai-task' + (t.empty ? ' empty' : '') + '" style="--task:' + svEsc(t.color || '#00e5a0') + '"><div class="sv-ai-task-meta">' + svEsc(t.meta || 'AI') + '</div><h4>' + svEsc(t.title) + '</h4><p>' + svEsc(t.text) + '</p><div class="sv-ai-task-actions">' + actions + '</div></article>';
   }
+  function ensureSmartActions(){
+    var stockArea = document.querySelector('.stock-area');
+    if (!stockArea || el('sv-smart-actions')) return;
+    var panel = document.createElement('section');
+    panel.id = 'sv-smart-actions';
+    panel.className = 'sv-smart-actions';
+    panel.innerHTML = '<div class="sv-smart-actions-head"><div><div class="sv-smart-actions-kicker">Comenzi rapide inteligente</div><div class="sv-smart-actions-title">Urmatorul click bun</div><div class="sv-smart-actions-sub">Actiuni sugerate automat din stoc, voce, scule si activitatea zilei.</div></div><div class="sv-smart-actions-badge" id="sv-smart-actions-count">0 disponibile</div></div><div class="sv-smart-actions-grid" id="sv-smart-actions-grid"></div>';
+    var inbox = el('sv-ai-inbox');
+    var dash = el('sv-exec-dashboard');
+    if (inbox && inbox.parentElement === stockArea) inbox.insertAdjacentElement('afterend', panel);
+    else if (dash && dash.parentElement === stockArea) dash.insertAdjacentElement('afterend', panel);
+    else stockArea.appendChild(panel);
+  }
+  function smartActionButton(a){
+    return '<button type="button" class="sv-smart-action" data-sv-ai-action="' + svEsc(a.action) + '" style="--action:' + svEsc(a.color || '#4d9fff') + '"><b>' + svEsc(a.label) + '</b><span>' + svEsc(a.text || '') + '</span></button>';
+  }
+  function updateSmartActions(){
+    ensureSmartActions();
+    var grid = el('sv-smart-actions-grid');
+    if (!grid) return;
+    var stock = svInboxStock();
+    var logs = svInboxLog();
+    var tools = svInboxTools();
+    var zero = stock.filter(function(p){ return Number(p.qty || 0) <= 0; });
+    var critical = stock.filter(function(p){ return Number(p.qty || 0) > 0 && Number(p.min || 0) > 0 && Number(p.qty || 0) <= Number(p.min || 0); });
+    var outTools = tools.filter(function(t){ return t.status === 'out'; });
+    var defectiveTools = tools.filter(function(t){ return t.status === 'defect'; });
+    var errors = logs.filter(function(l){ return /err|nerecunoscut|unknown|eroare/i.test(String(l.type || l.result || l.status || '')); }).slice(-5);
+    var actions = [];
+    if (zero.length || critical.length) actions.push({ label:'Lista cumpărături', text:(zero.length + critical.length) + ' produse cer atenție', action:'shopping', color:'#ffa502' });
+    if (zero.length || critical.length) actions.push({ label:'PDF stoc', text:'Export rapid pentru verificare', action:'pdf', color:'#ffa502' });
+    if (outTools.length || defectiveTools.length) actions.push({ label:'Scule șantier', text:outTools.length + ' afară, ' + defectiveTools.length + ' defecte', action:'site', color:'#4d9fff' });
+    if (outTools.length) actions.push({ label:'Raport scule', text:'Vezi cine are sculele', action:'site-report', color:'#4d9fff' });
+    if (errors.length) actions.push({ label:'Corectează vocea', text:'Verifică ultimele comenzi AI', action:'focus-voice', color:'#a78bfa' });
+    actions.push({ label:'+ Produs', text:'Adaugă rapid în stoc', action:'add', color:'#00e5a0' });
+    actions.push({ label:'Microfon AI', text:'Pornește comanda vocală', action:'mic', color:'#00e5a0' });
+    actions.push({ label:'Funcții', text:'Deschide panoul complet', action:'functions', color:'#a78bfa' });
+    actions.push({ label:'Raport executiv', text:'Rezumat pentru decizii', action:'report', color:'#ffa502' });
+    grid.innerHTML = actions.slice(0,9).map(smartActionButton).join('');
+    if (el('sv-smart-actions-count')) el('sv-smart-actions-count').textContent = actions.length + ' disponibile';
+  }
   function updateAiInbox(){
     ensureAiInbox();
     var list = el('sv-ai-inbox-list');
@@ -31961,6 +32008,7 @@ header{background:rgba(7,10,14,.86);border-bottom:1px solid rgba(111,128,149,.22
     if (action === 'add') { var b = document.querySelector('[data-sv-action="add"]'); if (b) b.click(); return; }
     if (action === 'critical') { var b2 = document.querySelector('[data-sv-stock-filter="critical"]'); if (b2) b2.click(); return; }
     if (action === 'shopping' && window.svSiteCommandCenter) return window.svSiteCommandCenter.checkAlerts();
+    if (action === 'functions' && window.svFunctionCenter) return window.svFunctionCenter.open();
     if (action === 'focus-voice') { var input = el('manual-input'); if (input) input.focus(); return; }
     if (action === 'voice-test' && window.StocVoceVoiceEngine) return window.StocVoceVoiceEngine.route('adauga 10 suruburi m6');
     if (action === 'mic' && typeof toggleMainMic === 'function') return toggleMainMic();
@@ -31993,6 +32041,7 @@ header{background:rgba(7,10,14,.86);border-bottom:1px solid rgba(111,128,149,.22
     if (manual) manual.setAttribute('placeholder','Ex: George a luat bormașina / adaugă 10 șuruburi M6');
     updateSaasHero();
     updateAiInbox();
+    updateSmartActions();
   }
   document.addEventListener('click', function(e){
     var btn = e.target && e.target.closest ? e.target.closest('[data-sv-ai-action]') : null;
