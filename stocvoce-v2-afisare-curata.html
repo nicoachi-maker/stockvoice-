@@ -31873,8 +31873,14 @@ header{background:rgba(7,10,14,.86);border-bottom:1px solid rgba(111,128,149,.22
 .sv-smart-actions-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;max-height:124px;overflow:auto;padding-right:4px}.sv-smart-actions-grid::-webkit-scrollbar{width:5px}.sv-smart-actions-grid::-webkit-scrollbar-thumb{background:#263140;border-radius:999px}
 .sv-smart-action{min-height:62px;border:1px solid var(--action,#4d9fff);border-radius:10px;background:rgba(8,12,17,.68);color:#f1f5f9;text-align:left;padding:8px 9px;cursor:pointer;display:flex;flex-direction:column;gap:4px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.02)}.sv-smart-action:hover{background:linear-gradient(135deg,color-mix(in srgb,var(--action,#4d9fff) 22%,rgba(8,12,17,.9)),rgba(8,12,17,.86));transform:translateY(-1px)}
 .sv-smart-action b{font-family:'JetBrains Mono',monospace;font-size:10px;line-height:1.2;letter-spacing:.8px;text-transform:uppercase;color:var(--action,#4d9fff)}.sv-smart-action span{font-size:11px;line-height:1.25;color:#9badbf}
+.sv-live-log{margin:0 0 20px;padding:11px;border:1px solid rgba(111,128,149,.2);border-radius:12px;background:linear-gradient(180deg,rgba(18,24,33,.82),rgba(8,12,17,.9));box-shadow:0 16px 42px rgba(0,0,0,.2)}
+.sv-live-log-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:9px}.sv-live-log-kicker{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1.6px;text-transform:uppercase;color:#8ea0b7}.sv-live-log-title{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;line-height:1;color:#f1f5f9;margin-top:3px}.sv-live-log-sub{font-size:11px;color:#8ea0b7;margin-top:3px}
+.sv-live-log-filters{display:flex;gap:6px;flex-wrap:wrap}.sv-live-log-filters button{height:28px;border-radius:8px;border:1px solid rgba(111,128,149,.28);background:rgba(8,12,17,.64);color:#8ea0b7;font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:900;letter-spacing:.8px;text-transform:uppercase;padding:0 8px;cursor:pointer}.sv-live-log-filters button.active{border-color:var(--sv-green);color:var(--sv-green);background:rgba(0,229,160,.08)}
+.sv-live-log-list{max-height:222px;overflow:auto;border:1px solid rgba(111,128,149,.12);border-radius:10px;background:rgba(8,12,17,.5)}.sv-live-log-list::-webkit-scrollbar{width:5px}.sv-live-log-list::-webkit-scrollbar-thumb{background:#263140;border-radius:999px}
+.sv-live-log-row{display:grid;grid-template-columns:74px 92px minmax(0,1fr) 116px;gap:8px;align-items:center;padding:9px 10px;border-bottom:1px solid rgba(111,128,149,.1)}.sv-live-log-row:last-child{border-bottom:0}.sv-live-log-time{font-family:'JetBrains Mono',monospace;font-size:10px;color:#8ea0b7}.sv-live-log-type{justify-self:start;border:1px solid var(--log,#00e5a0);border-radius:999px;color:var(--log,#00e5a0);font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:900;letter-spacing:.8px;text-transform:uppercase;padding:4px 7px}.sv-live-log-main{min-width:0}.sv-live-log-main b{display:block;color:#f1f5f9;font-size:13px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sv-live-log-main span{display:block;color:#8ea0b7;font-size:11px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sv-live-log-actor{font-family:'JetBrains Mono',monospace;font-size:9px;color:#dce5ee;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sv-live-log-empty{padding:18px;color:#8ea0b7;font-size:12px;text-align:center}
 @media(max-width:1200px){main{grid-template-columns:minmax(0,1fr) 340px}.stock-grid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))!important}.sv-function-strip{grid-template-columns:1fr}.sv-vcc-grid{grid-template-columns:1fr 1fr!important}.sv-vcc-history{grid-template-columns:1fr!important;max-height:68px!important}}
-@media(max-width:900px){main{grid-template-columns:1fr;grid-template-areas:'voice' 'vcc' 'stock' 'history';grid-template-rows:auto auto auto auto;height:auto!important;overflow:visible!important}.voice-zone{margin:10px 12px 0}.sv-vcc{margin:12px 12px 0!important}.sv-vcc-grid{grid-template-columns:1fr!important}.sv-vcc-history{max-height:120px!important}.stock-area{padding:18px 12px 90px;overflow:visible!important}.sidebar{position:relative;top:auto;max-height:none;height:320px}.sv-function-strip-actions{justify-content:flex-start}.stock-grid{grid-template-columns:1fr!important}#manual-input{width:100%}.voice-manual{width:100%;display:grid;grid-template-columns:1fr auto}.sv-function-title,.sv-site-title{font-size:34px!important}.sv-saas-hero{grid-template-columns:1fr;padding:14px}.sv-saas-title{font-size:34px}.sv-saas-panel{grid-template-columns:1fr 1fr}.sv-saas-actions button{flex:1 1 150px}.sv-ai-inbox-head,.sv-smart-actions-head{flex-direction:column;align-items:flex-start}.sv-ai-inbox-score{text-align:left}.sv-ai-inbox-list,.sv-smart-actions-grid{grid-template-columns:1fr;max-height:360px}}
+@media(max-width:900px){main{grid-template-columns:1fr;grid-template-areas:'voice' 'vcc' 'stock' 'history';grid-template-rows:auto auto auto auto;height:auto!important;overflow:visible!important}.voice-zone{margin:10px 12px 0}.sv-vcc{margin:12px 12px 0!important}.sv-vcc-grid{grid-template-columns:1fr!important}.sv-vcc-history{max-height:120px!important}.stock-area{padding:18px 12px 90px;overflow:visible!important}.sidebar{position:relative;top:auto;max-height:none;height:320px}.sv-function-strip-actions{justify-content:flex-start}.stock-grid{grid-template-columns:1fr!important}#manual-input{width:100%}.voice-manual{width:100%;display:grid;grid-template-columns:1fr auto}.sv-function-title,.sv-site-title{font-size:34px!important}.sv-saas-hero{grid-template-columns:1fr;padding:14px}.sv-saas-title{font-size:34px}.sv-saas-panel{grid-template-columns:1fr 1fr}.sv-saas-actions button{flex:1 1 150px}.sv-ai-inbox-head,.sv-smart-actions-head,.sv-live-log-head{flex-direction:column;align-items:flex-start}.sv-ai-inbox-score{text-align:left}.sv-ai-inbox-list,.sv-smart-actions-grid{grid-template-columns:1fr;max-height:360px}.sv-live-log-row{grid-template-columns:68px 82px minmax(0,1fr)}.sv-live-log-actor{display:none}}
 </style>
 <script id="sv-world-class-polish-script">
 (function(){
@@ -31970,6 +31976,62 @@ header{background:rgba(7,10,14,.86);border-bottom:1px solid rgba(111,128,149,.22
     grid.innerHTML = actions.slice(0,9).map(smartActionButton).join('');
     if (el('sv-smart-actions-count')) el('sv-smart-actions-count').textContent = actions.length + ' disponibile';
   }
+  function ensureLiveLog(){
+    var stockArea = document.querySelector('.stock-area');
+    if (!stockArea || el('sv-live-log')) return;
+    var panel = document.createElement('section');
+    panel.id = 'sv-live-log';
+    panel.className = 'sv-live-log';
+    panel.innerHTML = '<div class="sv-live-log-head"><div><div class="sv-live-log-kicker">Jurnal operational live</div><div class="sv-live-log-title">Tot ce s-a miscat astazi</div><div class="sv-live-log-sub">Voce, stoc, materiale si scule intr-un singur flux de verificare.</div></div><div class="sv-live-log-filters"><button type="button" data-sv-live-filter="all" class="active">Toate</button><button type="button" data-sv-live-filter="voice">Voce</button><button type="button" data-sv-live-filter="stock">Stoc</button><button type="button" data-sv-live-filter="site">Santier</button><button type="button" data-sv-live-filter="tools">Scule</button></div></div><div class="sv-live-log-list" id="sv-live-log-list"></div>';
+    var smart = el('sv-smart-actions');
+    var inbox = el('sv-ai-inbox');
+    if (smart && smart.parentElement === stockArea) smart.insertAdjacentElement('afterend', panel);
+    else if (inbox && inbox.parentElement === stockArea) inbox.insertAdjacentElement('afterend', panel);
+    else stockArea.appendChild(panel);
+  }
+  function liveTime(v){
+    var d = v ? new Date(v) : null;
+    if (!d || isNaN(d.getTime())) d = new Date();
+    return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
+  function liveRow(item){
+    return '<div class="sv-live-log-row" style="--log:' + svEsc(item.color || '#00e5a0') + '"><div class="sv-live-log-time">' + svEsc(item.time || '') + '</div><div class="sv-live-log-type">' + svEsc(item.type || 'info') + '</div><div class="sv-live-log-main"><b>' + svEsc(item.title || '-') + '</b><span>' + svEsc(item.text || '') + '</span></div><div class="sv-live-log-actor">' + svEsc(item.actor || 'operator') + '</div></div>';
+  }
+  function updateLiveLog(){
+    ensureLiveLog();
+    var list = el('sv-live-log-list');
+    if (!list) return;
+    var filter = window.svLiveLogFilter || 'all';
+    var logs = svInboxLog();
+    var moves = svInboxMoves();
+    var tools = svInboxTools();
+    var items = [];
+    logs.slice(-30).forEach(function(l){
+      var command = l.command || l.text || l.input || l.phrase || l.raw || 'Comanda vocala';
+      var result = l.result || l.status || l.type || '';
+      var isErr = /err|nerecunoscut|unknown|eroare/i.test(String(result));
+      var qty = l.qty || l.quantity || '';
+      var name = l.product || l.name || l.item || '';
+      items.push({ group:/in|out|add|minus|stock/i.test(String(result)) ? 'stock' : 'voice', type:isErr ? 'Eroare' : 'Voce', color:isErr ? '#ff4757' : '#a78bfa', title:command, text:[result, name, qty ? qty + ' buc' : ''].filter(Boolean).join(' · '), actor:l.user || l.actor || l.operator || 'operator', ts:l.ts || l.time || l.date });
+    });
+    moves.slice(-30).forEach(function(m){
+      var material = m.material || m.item || m.name || m.product || 'Material';
+      var person = m.person || m.worker || m.user || m.actor || '';
+      var qty = m.qty || m.quantity || m.amount || '';
+      items.push({ group:'site', type:'Santier', color:'#ffa502', title:material, text:[person ? person + ' a folosit' : 'Consum material', qty ? qty + ' buc' : '', m.site || m.location || ''].filter(Boolean).join(' · '), actor:person || 'santier', ts:m.ts || m.time || m.date });
+    });
+    tools.filter(function(t){ return t.status === 'out' || t.status === 'defect'; }).slice(-20).forEach(function(t){
+      var out = t.status === 'out';
+      items.push({ group:'tools', type:out ? 'Afara' : 'Defect', color:out ? '#4d9fff' : '#ff4757', title:t.name || t.tool || 'Scula', text:[t.person || t.worker || t.assignedTo || '', t.site || t.location || '', out ? 'in folosinta' : 'necesita verificare'].filter(Boolean).join(' · '), actor:t.person || t.worker || 'scule', ts:t.updatedAt || t.checkedAt || t.ts || t.time });
+    });
+    items.sort(function(a,b){ return new Date(b.ts || 0).getTime() - new Date(a.ts || 0).getTime(); });
+    if (filter !== 'all') items = items.filter(function(i){ return i.group === filter; });
+    if (!items.length) {
+      list.innerHTML = '<div class="sv-live-log-empty">Nu exista activitate pentru filtrul selectat. Cand folosesti vocea, stocul sau sculele, miscarile apar aici.</div>';
+      return;
+    }
+    list.innerHTML = items.slice(0,18).map(function(i){ i.time = liveTime(i.ts); return liveRow(i); }).join('');
+  }
   function updateAiInbox(){
     ensureAiInbox();
     var list = el('sv-ai-inbox-list');
@@ -32042,12 +32104,21 @@ header{background:rgba(7,10,14,.86);border-bottom:1px solid rgba(111,128,149,.22
     updateSaasHero();
     updateAiInbox();
     updateSmartActions();
+    updateLiveLog();
   }
   document.addEventListener('click', function(e){
     var btn = e.target && e.target.closest ? e.target.closest('[data-sv-ai-action]') : null;
     if (!btn) return;
     e.preventDefault();
     handleAiInboxAction(btn.getAttribute('data-sv-ai-action'));
+  });
+  document.addEventListener('click', function(e){
+    var btn = e.target && e.target.closest ? e.target.closest('[data-sv-live-filter]') : null;
+    if (!btn) return;
+    e.preventDefault();
+    window.svLiveLogFilter = btn.getAttribute('data-sv-live-filter') || 'all';
+    document.querySelectorAll('[data-sv-live-filter]').forEach(function(b){ b.classList.toggle('active', b === btn); });
+    updateLiveLog();
   });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', polish); else polish();
   window.addEventListener('load', function(){ setTimeout(polish, 300); setTimeout(polish, 1400); });
